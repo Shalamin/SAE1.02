@@ -15,7 +15,7 @@
 #define X_INITIAL 40
 #define Y_INITIAL 20
 // nombre de pommes à manger pour gagner
-#define NB_POMMES 4
+#define NB_POMMES 10
 // temporisation entre deux déplacements du serpent (en microsecondes)
 #define ATTENTE 200000
 // caractères pour représenter le serpent
@@ -38,16 +38,18 @@
 // et on neutralise la ligne 0 et la colonne 0 du tableau 2D (elles ne sont jamais
 // utilisées)
 typedef char tPlateau[LARGEUR_PLATEAU + 1][HAUTEUR_PLATEAU + 1];
+int lesPommesX[NB_POMMES] = {75, 75, 78, 2, 8, 78, 74, 2, 72, 5};
+int lesPommesY[NB_POMMES] = {8, 39, 2, 2, 5, 39, 33, 38, 35, 2};
 
 void initPlateau(tPlateau plateau);
 void dessinerPlateau(tPlateau plateau);
-void ajouterPomme(tPlateau plateau, int *xPomme, int *yPomme);
+void ajouterPomme(tPlateau plateau, int *xPomme, int *yPomme, int numeroPomme);
 void afficher(int, int, char);
 void effacer(int x, int y);
 void dessinerSerpent(int lesX[], int lesY[]);
-char definirDirection(char direction, int lesX[], int lesY[], int xPomme, int yPomme);
+char definirDirection(char direction, int lesX[], int lesY[], int xPomme, int yPomme, int *deplacement);
 void progresser(int lesX[], int lesY[], char direction, tPlateau plateau, bool *collision, bool *pomme);
-void finDuJeu(int numeroPomme, time_t debut_t, time_t fin_t);
+void finDuJeu(int numeroPomme, time_t debut_t, time_t fin_t, int deplacement);
 void gotoxy(int x, int y);
 int kbhit();
 void disableEcho();
@@ -71,7 +73,9 @@ int main()
     bool collision = false;
     bool gagne = false;
     bool pommeMangee = false;
-    int xPomme, yPomme;
+    int xPomme = lesPommesX[0];
+    int yPomme = lesPommesY[0];
+    int deplacement = 0;
     clock_t debut_t, fin_t;
     debut_t = clock();
     // compteur de pommes mangées
@@ -91,7 +95,7 @@ int main()
     dessinerPlateau(lePlateau);
 
     srand(time(NULL));
-    ajouterPomme(lePlateau, &xPomme, &yPomme);
+    ajouterPomme(lePlateau, &xPomme, &yPomme, nbPommes);
 
     // initialisation : le serpent se dirige vers la DROITE
     dessinerSerpent(lesX, lesY);
@@ -103,7 +107,7 @@ int main()
     // si toutes les pommes sont mangées
     do
     {
-        direction = definirDirection(direction, lesX, lesY, xPomme, yPomme);
+        direction = definirDirection(direction, lesX, lesY, xPomme, yPomme, &deplacement);
         progresser(lesX, lesY, direction, lePlateau, &collision, &pommeMangee);
         if (pommeMangee)
         {
@@ -111,7 +115,7 @@ int main()
             gagne = (nbPommes == NB_POMMES);
             if (!gagne)
             {
-                ajouterPomme(lePlateau, &xPomme, &yPomme);
+                ajouterPomme(lePlateau, &xPomme, &yPomme, nbPommes);
                 pommeMangee = false;
             }
         }
@@ -129,7 +133,7 @@ int main()
     } while (touche != STOP && !collision && !gagne);
     enableEcho();
     fin_t = clock();
-    finDuJeu(nbPommes, debut_t, fin_t);
+    finDuJeu(nbPommes, debut_t, fin_t, deplacement);
     return EXIT_SUCCESS;
 }
 
@@ -177,16 +181,13 @@ void dessinerPlateau(tPlateau plateau)
     }
 }
 
-void ajouterPomme(tPlateau plateau, int *xPomme, int *yPomme)
+void ajouterPomme(tPlateau plateau, int *xPomme, int *yPomme, int numeroPomme)
 {
     // génère aléatoirement la position d'une pomme,
     // vérifie que ça correspond à une case vide
     // du plateau puis l'ajoute au plateau et l'affiche
-    do
-    {
-        *xPomme = (rand() % LARGEUR_PLATEAU) + 1;
-        *yPomme = (rand() % HAUTEUR_PLATEAU) + 1;
-    } while (plateau[*xPomme][*yPomme] != ' ');
+    *xPomme = lesPommesX[numeroPomme];
+    *yPomme = lesPommesY[numeroPomme];
     plateau[*xPomme][*yPomme] = POMME;
     afficher(*xPomme, *yPomme, POMME);
 }
@@ -195,14 +196,12 @@ void afficher(int x, int y, char car)
 {
     gotoxy(x, y);
     printf("%c", car);
-    gotoxy(1, 1);
 }
 
 void effacer(int x, int y)
 {
     gotoxy(x, y);
     printf(" ");
-    gotoxy(1, 1);
 }
 
 void dessinerSerpent(int lesX[], int lesY[])
@@ -214,26 +213,31 @@ void dessinerSerpent(int lesX[], int lesY[])
     }
     afficher(lesX[0], lesY[0], TETE);
 }
-char definirDirection(char direction, int lesX[], int lesY[], int xPomme, int yPomme)
+char definirDirection(char direction, int lesX[], int lesY[], int xPomme, int yPomme, int *deplacement)
 {
-    if (lesX[0] < xPomme && direction != GAUCHE)
+    if (lesX[0] < xPomme)
     {
         direction = DROITE;
+        *deplacement = *deplacement + 1;
     }
-    else if (lesX[0] > xPomme && direction != DROITE)
+    else if (lesX[0] > xPomme)
     {
-
         direction = GAUCHE;
+        *deplacement = *deplacement + 1;
     }
-    else if (lesY[0] < yPomme && direction != HAUT)
+    else if (lesY[0] < yPomme)
     {
-
         direction = BAS;
+        *deplacement = *deplacement + 1;
     }
-    else if (lesY[0] > yPomme && direction != BAS)
+    else if (lesY[0] > yPomme)
     {
         direction = HAUT;
+        *deplacement = *deplacement + 1;
     }
+
+    /////////////////////////////////////////////////
+
     return direction;
 }
 void progresser(int lesX[], int lesY[], char direction, tPlateau plateau, bool *collision, bool *pomme)
@@ -280,7 +284,7 @@ void progresser(int lesX[], int lesY[], char direction, tPlateau plateau, bool *
     dessinerSerpent(lesX, lesY);
 }
 
-void finDuJeu(int numeroPomme, time_t debut_t, time_t fin_t)
+void finDuJeu(int numeroPomme, time_t debut_t, time_t fin_t, int deplacement)
 {
     /* @brief Fin du programme , message de fin et réactivation de l'écriture dans la console*/
     enableEcho();
@@ -289,6 +293,7 @@ void finDuJeu(int numeroPomme, time_t debut_t, time_t fin_t)
 
     printf("La partie est terminée !\n");
     printf("Votre score est de ; %d\n", numeroPomme);
+    printf("Vous avez effectué %d déplacement.\n", deplacement);
     printf("Le temps total à été de %.3f secondes\n", total);
 }
 

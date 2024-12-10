@@ -17,7 +17,7 @@
 // nombre de pommes à manger pour gagner
 #define NB_POMMES 10
 // temporisation entre deux déplacements du serpent (en microsecondes)
-#define ATTENTE 2000000
+#define ATTENTE 200000
 // caractères pour représenter le serpent
 #define CORPS 'X'
 #define TETE 'O'
@@ -47,10 +47,9 @@ void ajouterPomme(tPlateau plateau, int *xPomme, int *yPomme, int numeroPomme);
 void afficher(int, int, char);
 void effacer(int x, int y);
 void dessinerSerpent(int lesX[], int lesY[]);
-char definirDirection(char direction, int lesX[], int lesY[], int xPomme, int yPomme);
 void nbAvancer(int xPomme, int lesX[], int yPomme, int lesY[], int *movX, int *movY);
 int valAbsolu(int valeur);
-void progresser(int lesX[], int lesY[], char direction, tPlateau plateau, bool *collision, bool *pomme, int valeur);
+void progresser(int lesX[], int lesY[], char direction, tPlateau plateau, bool *collision, bool *pomme);
 void finDuJeu(int numeroPomme, time_t debut_t, time_t fin_t, int deplacement);
 void gotoxy(int x, int y);
 int kbhit();
@@ -80,10 +79,18 @@ int main()
     int deplacement = 0;
     int movX;
     int movY;
+    // valeur des modulo pour savoir l'ordre de deplacement
+    int valX1Modulo, valX2Modulo;
+    //nombre de mouvement dans une même direction
+    int nbMovement; 
+    // variable servant a comter le nombre de fois que le serpent va progresser
+    int i = 0;
     clock_t debut_t, fin_t;
     debut_t = clock();
     // compteur de pommes mangées
     int nbPommes = 0;
+    valX1Modulo = 0;
+    valX2Modulo = 3;
 
     // initialisation de la position du serpent : positionnement de la
     // tête en (X_INITIAL, Y_INITIAL), puis des anneaux à sa gauche
@@ -111,22 +118,49 @@ int main()
     // si toutes les pommes sont mangées
     do
     {
-        for (int i = 0; i < NB_POMMES * 2; i++)
+        nbAvancer(xPomme, lesX, yPomme, lesY, &movX, &movY);
+        if ((i % 4 == valX1Modulo || i % 4 == valX2Modulo) && movX != 0 )
         {
-            nbAvancer(xPomme, lesX, yPomme, lesY, &movX, &movY);
-            if (i % 4 == 0 || i % 4 == 3)
+            direction = (movX < 0) ? GAUCHE : DROITE;
+            nbMovement = valAbsolu(movX);
+            deplacement += nbMovement;
+            for(int j = 0; j < nbMovement; j++)
             {
-                direction = (movX < 0) ? GAUCHE : DROITE;
-
-                progresser(lesX, lesY, direction, lePlateau, &collision, &pommeMangee, valAbsolu(movX));
-            }
-            else
-            {
-                direction = (movY < 0) ? HAUT : BAS;
-                progresser(lesX, lesY, direction, lePlateau, &collision, &pommeMangee, valAbsolu(movX));
-            }
+                progresser(lesX, lesY, direction, lePlateau, &collision, &pommeMangee);
+                if (!gagne)
+                {
+                    if (!collision)
+                    {
+                        usleep(ATTENTE);
+                        if (kbhit() == 1)
+                        {
+                            touche = getchar();
+                        }
+                    }
+                }
+            } 
         }
-
+        else if (movY != 0 )
+        {
+            direction = (movY < 0) ? HAUT : BAS;
+            nbMovement = valAbsolu(movY);
+            deplacement += nbMovement;
+            for(int j = 0; j < nbMovement; j++)
+            {
+                progresser(lesX, lesY, direction, lePlateau, &collision, &pommeMangee);
+                if (!gagne)
+                {
+                    if (!collision)
+                    {
+                        usleep(ATTENTE);
+                        if (kbhit() == 1)
+                        {
+                            touche = getchar();
+                        }
+                    }
+                }
+            } 
+        }
         if (pommeMangee)
         {
             nbPommes++;
@@ -136,19 +170,14 @@ int main()
                 ajouterPomme(lePlateau, &xPomme, &yPomme, nbPommes);
                 pommeMangee = false;
             }
-        }
-        if (!gagne)
-        {
-            if (!collision)
+            //inverce l'ordre des deplacement quand necesaire
+            if((movX == 0)^(movY == 0))
             {
-                usleep(ATTENTE);
-                if (kbhit() == 1)
-                {
-                    touche = getchar();
-                }
+                valX1Modulo = (valX1Modulo+1)%4;
+                valX2Modulo = (valX2Modulo+1)%4;
             }
         }
-        deplacement++;
+        i++;
     } while (touche != STOP && !collision && !gagne);
     enableEcho();
     fin_t = clock();
@@ -224,152 +253,47 @@ int valAbsolu(int valeur)
 {
     return (valeur < 0) ? -valeur : valeur;
 }
-char definirDirection(char direction, int lesX[], int lesY[], int xPomme, int yPomme)
-{
-    if (lesX[0] < xPomme)
-    {
-        direction = DROITE;
-    }
-    else if (lesX[0] > xPomme)
-    {
-        direction = GAUCHE;
-    }
-    else if (lesY[0] < yPomme)
-    {
-        direction = BAS;
-    }
-    else if (lesY[0] > yPomme)
-    {
-        direction = HAUT;
-    }
-
-    /////////////////////////////////////////////////
-
-    return direction;
-}
-void progresser(int lesX[], int lesY[], char direction, tPlateau plateau, bool *collision, bool *pomme, int mouvement)
+void progresser(int lesX[], int lesY[], char direction, tPlateau plateau, bool *collision, bool *pomme)
 {
     // efface le dernier élément avant d'actualiser la position de tous les
     // élémentds du serpent avant de le  redessiner et détecte une
     // collision avec une pomme ou avec une bordure
-
+    effacer(lesX[TAILLE - 1], lesY[TAILLE - 1]);
     // faire progresser la tete dans la nouvelle direction
+    for (int j = TAILLE - 1; j > 0; j--)
+    {
+        lesX[j] = lesX[j - 1];
+        lesY[j] = lesY[j - 1];
+    }
+
     switch (direction)
     {
     case HAUT:
-        for (int i = 0; i < mouvement; i++)
-        {
-            effacer(lesX[TAILLE - 1], lesY[TAILLE - 1]);
-
-            for (int j = TAILLE - 1; j > 0; j--)
-            {
-                lesX[j] = lesX[j - 1];
-                lesY[j] = lesY[j - 1];
-            }
-        }
         lesY[0] = lesY[0] - 1;
-        *pomme = false;
-        // détection d'une "collision" avec une pomme
-        if (plateau[lesX[0]][lesY[0]] == POMME)
-        {
-            *pomme = true;
-            // la pomme disparait du plateau
-            plateau[lesX[0]][lesY[0]] = VIDE;
-        }
-        // détection d'une collision avec la bordure
-        else if (plateau[lesX[0]][lesY[0]] == BORDURE)
-        {
-            *collision = true;
-        }
-        dessinerSerpent(lesX, lesY);
         break;
     case BAS:
-        for (int i = 0; i < mouvement; i++)
-        {
-            effacer(lesX[TAILLE - 1], lesY[TAILLE - 1]);
-
-            for (int j = TAILLE - 1; j > 0; j--)
-            {
-                lesX[j] = lesX[j - 1];
-                lesY[j] = lesY[j - 1];
-            }
-        }
         lesY[0] = lesY[0] + 1;
-        *pomme = false;
-        // détection d'une "collision" avec une pomme
-        if (plateau[lesX[0]][lesY[0]] == POMME)
-        {
-            *pomme = true;
-            // la pomme disparait du plateau
-            plateau[lesX[0]][lesY[0]] = VIDE;
-        }
-        // détection d'une collision avec la bordure
-        else if (plateau[lesX[0]][lesY[0]] == BORDURE)
-        {
-            *collision = true;
-        }
-
-        dessinerSerpent(lesX, lesY);
         break;
     case DROITE:
-        for (int i = 0; i < mouvement; i++)
-        {
-            effacer(lesX[TAILLE - 1], lesY[TAILLE - 1]);
-
-            for (int j = TAILLE - 1; j > 0; j--)
-            {
-                lesX[j] = lesX[j - 1];
-                lesY[j] = lesY[j - 1];
-            }
-        }
         lesX[0] = lesX[0] + 1;
-        *pomme = false;
-        // détection d'une "collision" avec une pomme
-        if (plateau[lesX[0]][lesY[0]] == POMME)
-        {
-            *pomme = true;
-            // la pomme disparait du plateau
-            plateau[lesX[0]][lesY[0]] = VIDE;
-        }
-        // détection d'une collision avec la bordure
-        else if (plateau[lesX[0]][lesY[0]] == BORDURE)
-        {
-            *collision = true;
-        }
-
-        dessinerSerpent(lesX, lesY);
-
         break;
     case GAUCHE:
-        for (int i = 0; i < mouvement; i++)
-        {
-            effacer(lesX[TAILLE - 1], lesY[TAILLE - 1]);
-
-            for (int j = TAILLE - 1; j > 0; j--)
-            {
-                lesX[j] = lesX[j - 1];
-                lesY[j] = lesY[j - 1];
-            }
-        }
         lesX[0] = lesX[0] - 1;
-        *pomme = false;
-        // détection d'une "collision" avec une pomme
-        if (plateau[lesX[0]][lesY[0]] == POMME)
-        {
-            *pomme = true;
-            // la pomme disparait du plateau
-            plateau[lesX[0]][lesY[0]] = VIDE;
-        }
-        // détection d'une collision avec la bordure
-        else if (plateau[lesX[0]][lesY[0]] == BORDURE)
-        {
-            *collision = true;
-        }
-
-        dessinerSerpent(lesX, lesY);
-
         break;
     }
+    // détection d'une "collision" avec une pomme
+    if (plateau[lesX[0]][lesY[0]] == POMME)
+    {
+        *pomme = true;
+        // la pomme disparait du plateau
+        plateau[lesX[0]][lesY[0]] = VIDE;
+    }
+    // détection d'une collision avec la bordure
+    else if (plateau[lesX[0]][lesY[0]] == BORDURE)
+    {
+        *collision = true;
+    }
+    dessinerSerpent(lesX, lesY);
 }
 
 void finDuJeu(int numeroPomme, time_t debut_t, time_t fin_t, int deplacement)

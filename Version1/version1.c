@@ -17,7 +17,7 @@
 // nombre de pommes à manger pour gagner
 #define NB_POMMES 10
 // temporisation entre deux déplacements du serpent (en microsecondes)
-#define ATTENTE 200000
+#define ATTENTE 2000000
 // caractères pour représenter le serpent
 #define CORPS 'X'
 #define TETE 'O'
@@ -31,7 +31,7 @@
 #define BORDURE '#'
 #define VIDE ' '
 #define POMME '6'
-
+#define FIN_DEPLACEMENT 0
 // définition d'un type pour le plateau : tPlateau
 // Attention, pour que les indices du tableau 2D (qui commencent à 0) coincident
 // avec les coordonées à l'écran (qui commencent à 1), on ajoute 1 aux dimensions
@@ -47,8 +47,10 @@ void ajouterPomme(tPlateau plateau, int *xPomme, int *yPomme, int numeroPomme);
 void afficher(int, int, char);
 void effacer(int x, int y);
 void dessinerSerpent(int lesX[], int lesY[]);
-char definirDirection(char direction, int lesX[], int lesY[], int xPomme, int yPomme, int *deplacement);
-void progresser(int lesX[], int lesY[], char direction, tPlateau plateau, bool *collision, bool *pomme);
+char definirDirection(char direction, int lesX[], int lesY[], int xPomme, int yPomme);
+void nbAvancer(int xPomme, int lesX[], int yPomme, int lesY[], int *movX, int *movY);
+int valAbsolu(int valeur);
+void progresser(int lesX[], int lesY[], char direction, tPlateau plateau, bool *collision, bool *pomme, int valeur);
 void finDuJeu(int numeroPomme, time_t debut_t, time_t fin_t, int deplacement);
 void gotoxy(int x, int y);
 int kbhit();
@@ -76,6 +78,8 @@ int main()
     int xPomme = lesPommesX[0];
     int yPomme = lesPommesY[0];
     int deplacement = 0;
+    int movX;
+    int movY;
     clock_t debut_t, fin_t;
     debut_t = clock();
     // compteur de pommes mangées
@@ -107,8 +111,22 @@ int main()
     // si toutes les pommes sont mangées
     do
     {
-        direction = definirDirection(direction, lesX, lesY, xPomme, yPomme, &deplacement);
-        progresser(lesX, lesY, direction, lePlateau, &collision, &pommeMangee);
+        for (int i = 0; i < NB_POMMES * 2; i++)
+        {
+            nbAvancer(xPomme, lesX, yPomme, lesY, &movX, &movY);
+            if (i % 4 == 0 || i % 4 == 3)
+            {
+                direction = (movX < 0) ? GAUCHE : DROITE;
+
+                progresser(lesX, lesY, direction, lePlateau, &collision, &pommeMangee, valAbsolu(movX));
+            }
+            else
+            {
+                direction = (movY < 0) ? HAUT : BAS;
+                progresser(lesX, lesY, direction, lePlateau, &collision, &pommeMangee, valAbsolu(movX));
+            }
+        }
+
         if (pommeMangee)
         {
             nbPommes++;
@@ -130,6 +148,7 @@ int main()
                 }
             }
         }
+        deplacement++;
     } while (touche != STOP && !collision && !gagne);
     enableEcho();
     fin_t = clock();
@@ -196,75 +215,161 @@ void dessinerSerpent(int lesX[], int lesY[])
     }
     afficher(lesX[0], lesY[0], TETE);
 }
-char definirDirection(char direction, int lesX[], int lesY[], int xPomme, int yPomme, int *deplacement)
+void nbAvancer(int xPomme, int lesX[], int yPomme, int lesY[], int *movX, int *movY)
+{
+    *movX = xPomme - lesX[0];
+    *movY = yPomme - lesY[0];
+}
+int valAbsolu(int valeur)
+{
+    return (valeur < 0) ? -valeur : valeur;
+}
+char definirDirection(char direction, int lesX[], int lesY[], int xPomme, int yPomme)
 {
     if (lesX[0] < xPomme)
     {
         direction = DROITE;
-        *deplacement = *deplacement + 1;
     }
     else if (lesX[0] > xPomme)
     {
         direction = GAUCHE;
-        *deplacement = *deplacement + 1;
     }
     else if (lesY[0] < yPomme)
     {
         direction = BAS;
-        *deplacement = *deplacement + 1;
     }
     else if (lesY[0] > yPomme)
     {
         direction = HAUT;
-        *deplacement = *deplacement + 1;
     }
 
     /////////////////////////////////////////////////
 
     return direction;
 }
-void progresser(int lesX[], int lesY[], char direction, tPlateau plateau, bool *collision, bool *pomme)
+void progresser(int lesX[], int lesY[], char direction, tPlateau plateau, bool *collision, bool *pomme, int mouvement)
 {
     // efface le dernier élément avant d'actualiser la position de tous les
     // élémentds du serpent avant de le  redessiner et détecte une
     // collision avec une pomme ou avec une bordure
-    effacer(lesX[TAILLE - 1], lesY[TAILLE - 1]);
 
-    for (int i = TAILLE - 1; i > 0; i--)
-    {
-        lesX[i] = lesX[i - 1];
-        lesY[i] = lesY[i - 1];
-    }
     // faire progresser la tete dans la nouvelle direction
     switch (direction)
     {
     case HAUT:
+        for (int i = 0; i < mouvement; i++)
+        {
+            effacer(lesX[TAILLE - 1], lesY[TAILLE - 1]);
+
+            for (int j = TAILLE - 1; j > 0; j--)
+            {
+                lesX[j] = lesX[j - 1];
+                lesY[j] = lesY[j - 1];
+            }
+        }
         lesY[0] = lesY[0] - 1;
+        *pomme = false;
+        // détection d'une "collision" avec une pomme
+        if (plateau[lesX[0]][lesY[0]] == POMME)
+        {
+            *pomme = true;
+            // la pomme disparait du plateau
+            plateau[lesX[0]][lesY[0]] = VIDE;
+        }
+        // détection d'une collision avec la bordure
+        else if (plateau[lesX[0]][lesY[0]] == BORDURE)
+        {
+            *collision = true;
+        }
+        dessinerSerpent(lesX, lesY);
         break;
     case BAS:
+        for (int i = 0; i < mouvement; i++)
+        {
+            effacer(lesX[TAILLE - 1], lesY[TAILLE - 1]);
+
+            for (int j = TAILLE - 1; j > 0; j--)
+            {
+                lesX[j] = lesX[j - 1];
+                lesY[j] = lesY[j - 1];
+            }
+        }
         lesY[0] = lesY[0] + 1;
+        *pomme = false;
+        // détection d'une "collision" avec une pomme
+        if (plateau[lesX[0]][lesY[0]] == POMME)
+        {
+            *pomme = true;
+            // la pomme disparait du plateau
+            plateau[lesX[0]][lesY[0]] = VIDE;
+        }
+        // détection d'une collision avec la bordure
+        else if (plateau[lesX[0]][lesY[0]] == BORDURE)
+        {
+            *collision = true;
+        }
+
+        dessinerSerpent(lesX, lesY);
         break;
     case DROITE:
+        for (int i = 0; i < mouvement; i++)
+        {
+            effacer(lesX[TAILLE - 1], lesY[TAILLE - 1]);
+
+            for (int j = TAILLE - 1; j > 0; j--)
+            {
+                lesX[j] = lesX[j - 1];
+                lesY[j] = lesY[j - 1];
+            }
+        }
         lesX[0] = lesX[0] + 1;
+        *pomme = false;
+        // détection d'une "collision" avec une pomme
+        if (plateau[lesX[0]][lesY[0]] == POMME)
+        {
+            *pomme = true;
+            // la pomme disparait du plateau
+            plateau[lesX[0]][lesY[0]] = VIDE;
+        }
+        // détection d'une collision avec la bordure
+        else if (plateau[lesX[0]][lesY[0]] == BORDURE)
+        {
+            *collision = true;
+        }
+
+        dessinerSerpent(lesX, lesY);
+
         break;
     case GAUCHE:
+        for (int i = 0; i < mouvement; i++)
+        {
+            effacer(lesX[TAILLE - 1], lesY[TAILLE - 1]);
+
+            for (int j = TAILLE - 1; j > 0; j--)
+            {
+                lesX[j] = lesX[j - 1];
+                lesY[j] = lesY[j - 1];
+            }
+        }
         lesX[0] = lesX[0] - 1;
+        *pomme = false;
+        // détection d'une "collision" avec une pomme
+        if (plateau[lesX[0]][lesY[0]] == POMME)
+        {
+            *pomme = true;
+            // la pomme disparait du plateau
+            plateau[lesX[0]][lesY[0]] = VIDE;
+        }
+        // détection d'une collision avec la bordure
+        else if (plateau[lesX[0]][lesY[0]] == BORDURE)
+        {
+            *collision = true;
+        }
+
+        dessinerSerpent(lesX, lesY);
+
         break;
     }
-    *pomme = false;
-    // détection d'une "collision" avec une pomme
-    if (plateau[lesX[0]][lesY[0]] == POMME)
-    {
-        *pomme = true;
-        // la pomme disparait du plateau
-        plateau[lesX[0]][lesY[0]] = VIDE;
-    }
-    // détection d'une collision avec la bordure
-    else if (plateau[lesX[0]][lesY[0]] == BORDURE)
-    {
-        *collision = true;
-    }
-    dessinerSerpent(lesX, lesY);
 }
 
 void finDuJeu(int numeroPomme, time_t debut_t, time_t fin_t, int deplacement)

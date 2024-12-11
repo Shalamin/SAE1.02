@@ -81,8 +81,8 @@ int main()
     int movY;
     // valeur des modulo pour savoir l'ordre de deplacement
     int valX1Modulo, valX2Modulo;
-    //nombre de mouvement dans une même direction
-    int nbMovement; 
+    // nombre de mouvement dans une même direction
+    int nbMovement;
     // variable servant a comter le nombre de fois que le serpent va progresser
     int i = 0;
     clock_t debut_t, fin_t;
@@ -119,12 +119,12 @@ int main()
     do
     {
         nbAvancer(xPomme, lesX, yPomme, lesY, &movX, &movY);
-        if ((i % 4 == valX1Modulo || i % 4 == valX2Modulo) && movX != 0 )
+        if ((i % 4 == valX1Modulo || i % 4 == valX2Modulo) && movX != 0)
         {
             direction = (movX < 0) ? GAUCHE : DROITE;
             nbMovement = valAbsolu(movX);
             deplacement += nbMovement;
-            for(int j = 0; j < nbMovement; j++)
+            for (int j = 0; j < nbMovement; j++)
             {
                 progresser(lesX, lesY, direction, lePlateau, &collision, &pommeMangee);
                 if (!gagne)
@@ -138,14 +138,14 @@ int main()
                         }
                     }
                 }
-            } 
+            }
         }
-        else if (movY != 0 )
+        else if (movY != 0)
         {
             direction = (movY < 0) ? HAUT : BAS;
             nbMovement = valAbsolu(movY);
             deplacement += nbMovement;
-            for(int j = 0; j < nbMovement; j++)
+            for (int j = 0; j < nbMovement; j++)
             {
                 progresser(lesX, lesY, direction, lePlateau, &collision, &pommeMangee);
                 if (!gagne)
@@ -159,7 +159,7 @@ int main()
                         }
                     }
                 }
-            } 
+            }
         }
         if (pommeMangee)
         {
@@ -170,11 +170,11 @@ int main()
                 ajouterPomme(lePlateau, &xPomme, &yPomme, nbPommes);
                 pommeMangee = false;
             }
-            //inverce l'ordre des deplacement quand necesaire
-            if((movX == 0)^(movY == 0))
+            // inverce l'ordre des deplacement quand necesaire
+            if ((movX == 0) ^ (movY == 0))
             {
-                valX1Modulo = (valX1Modulo+1)%4;
-                valX2Modulo = (valX2Modulo+1)%4;
+                valX1Modulo = (valX1Modulo + 1) % 4;
+                valX2Modulo = (valX2Modulo + 1) % 4;
             }
         }
         i++;

@@ -79,18 +79,11 @@ int main()
     int deplacement = 0;
     int movX;
     int movY;
-    // valeur des modulo pour savoir l'ordre de deplacement
-    int valX1Modulo, valX2Modulo;
     // nombre de mouvement dans une même direction
     int nbMovement;
-    // variable servant a comter le nombre de fois que le serpent va progresser
-    int i = 0;
     clock_t debut_t, fin_t;
-    debut_t = clock();
     // compteur de pommes mangées
     int nbPommes = 0;
-    valX1Modulo = 0;
-    valX2Modulo = 3;
 
     // initialisation de la position du serpent : positionnement de la
     // tête en (X_INITIAL, Y_INITIAL), puis des anneaux à sa gauche
@@ -116,15 +109,16 @@ int main()
 
     // boucle de jeu. Arret si touche STOP, si collision avec une bordure ou
     // si toutes les pommes sont mangées
+    debut_t = clock();
     do
     {
         nbAvancer(xPomme, lesX, yPomme, lesY, &movX, &movY);
-        if ((i % 4 == valX1Modulo || i % 4 == valX2Modulo) && movX != 0)
+        if (movX != 0)
         {
             direction = (movX < 0) ? GAUCHE : DROITE;
             nbMovement = valAbsolu(movX);
             deplacement += nbMovement;
-            for (int j = 0; j < nbMovement; j++)
+            for (int i = 0; i < nbMovement; i++)
             {
                 progresser(lesX, lesY, direction, lePlateau, &collision, &pommeMangee);
                 if (!gagne)
@@ -145,7 +139,7 @@ int main()
             direction = (movY < 0) ? HAUT : BAS;
             nbMovement = valAbsolu(movY);
             deplacement += nbMovement;
-            for (int j = 0; j < nbMovement; j++)
+            for (int i = 0; i < nbMovement; i++)
             {
                 progresser(lesX, lesY, direction, lePlateau, &collision, &pommeMangee);
                 if (!gagne)
@@ -171,13 +165,7 @@ int main()
                 pommeMangee = false;
             }
             // inverce l'ordre des deplacement quand necesaire
-            if ((movX == 0) ^ (movY == 0))
-            {
-                valX1Modulo = (valX1Modulo + 1) % 4;
-                valX2Modulo = (valX2Modulo + 1) % 4;
-            }
         }
-        i++;
     } while (touche != STOP && !collision && !gagne);
     enableEcho();
     fin_t = clock();

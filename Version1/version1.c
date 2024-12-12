@@ -183,7 +183,7 @@ void initPlateau(tPlateau plateau)
     {
         for (int j = 1; j <= HAUTEUR_PLATEAU; j++)
         {
-            plateau[i][j] = (i == 1 || i == LARGEUR_PLATEAU || j == 1 || j == HAUTEUR_PLATEAU) ? BORDURE : VIDE;
+            plateau[i][j] = (i == 1 || i == LARGEUR_PLATEAU || j == 1 || j == HAUTEUR_PLATEAU)? BORDURE: VIDE;
         }
     }
 }

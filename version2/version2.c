@@ -10,7 +10,7 @@
 #define TAILLE 10
 // dimensions du plateau
 #define LARGEUR_PLATEAU 80
-#define HAUTEUR_PLATEAU 40 //
+#define HAUTEUR_PLATEAU 40 
 // position initiale de la tête du serpent
 #define X_INITIAL 40
 #define Y_INITIAL 20
@@ -37,6 +37,12 @@
 #define P_DROITE 3
 #define P_BAS 4
 
+//variable globale
+// revoie la divition des dimention du plateau toujours supérieur ou égale à 1;
+int QUOTIEN_DIMENTION = (LARGEUR_PLATEAU>HAUTEUR_PLATEAU)? LARGEUR_PLATEAU/HAUTEUR_PLATEAU : HAUTEUR_PLATEAU/LARGEUR_PLATEAU;
+
+
+
 // définition d'un type pour le plateau : tPlateau
 // Attention, pour que les indices du tableau 2D (qui commencent à 0) coincident
 // avec les coordonées à l'écran (qui commencent à 1), on ajoute 1 aux dimensions
@@ -55,7 +61,8 @@ void effacer(int x, int y);
 void dessinerSerpent(int lesX[], int lesY[]);
 void calculDistance(int endroitX, int lesX[], int endroitY, int lesY[], int *movX, int *movY);
 int valAbsolu(int valeur);
-int peutPrendPortail(int lesX[], int lesY[], int xPomme, int yPomme);
+void choixDirection(int lesX[], int lesY[], int xPomme, int yPomme, int *portail,int *distancePommeX,int *distancePommeY);
+void vaVersPortail(int portail, int lesX[], int lesY[], int *distancePortailX, int *distancePortailY);
 void progresser(int lesX[], int lesY[], char direction, tPlateau plateau, bool *collision, bool *pomme);
 void finDuJeu(int numeroPomme, time_t debut_t, time_t fin_t);
 void gotoxy(int x, int y);
@@ -82,11 +89,23 @@ int main()
     bool gagne = false;
     bool pommeMangee = false;
     int xPomme, yPomme;
+    int deplacement = 0;
     clock_t debut_t, fin_t;
     // compteur de pommes mangées
     int nbPommes = 0;
     // stock si le serpent doit prendre un portail et lequel et est a 0 sinon;
     int portail = 0;
+    //distance avec la pomme
+    int distancePommeX, distancePommeY;
+    //distance le portail a prendre
+    int distancePortailX, distancePortailY;
+    // valeur des modulo pour savoir l'ordre de deplacement
+    int valX1Modulo, valX2Modulo;
+    // nombre de mouvement dans une même direction
+    int nbMovement;
+    // variable servant a comter le nombre de fois que le serpent va progresser
+    int i = 0;
+
     // initialisation de la position du serpent : positionnement de la
     // tête en (X_INITIAL, Y_INITIAL), puis des anneaux à sa gauche
     for (int i = 0; i < TAILLE; i++)
@@ -113,30 +132,126 @@ int main()
     // si toutes les pommes sont mangées
     debut_t = clock();
     do
-    {
-        portail = peutPrendPortail(lesX, lesY, xPomme, yPomme);
-        direction = definirDirection(direction, lesX, lesY, xPomme, yPomme);
-        progresser(lesX, lesY, direction, lePlateau, &collision, &pommeMangee);
-        if (pommeMangee)
+    {   
+        choixDirection(lesX, lesY, xPomme, yPomme, &portail, &distancePommeX, &distancePommeY);
+        if(portail > 0)
         {
-            nbPommes++;
-            gagne = (nbPommes == NB_POMMES);
-            if (!gagne)
+            //calcule la direction pour allez au portail
+            vaVersPortail(portail, lesX, lesY, &distancePortailX, &distancePortailY);
+            //fait le chemin jusqu'au portail en X
+            if ((i % 4 == valX1Modulo || i % 4 == valX2Modulo) && distancePortailX != 0)
             {
-                ajouterPomme(lePlateau, &xPomme, &yPomme, nbPommes);
-                pommeMangee = false;
-            }
-        }
-        if (!gagne)
-        {
-            if (!collision)
-            {
-                usleep(ATTENTE);
-                if (kbhit() == 1)
+                direction = (distancePortailX < 0) ? GAUCHE : DROITE;
+                nbMovement = valAbsolu(distancePortailX);
+                deplacement += nbMovement;
+                for (int j = 0; j < nbMovement && touche != STOP; j++)
                 {
-                    touche = getchar();
+                    progresser(lesX, lesY, direction, lePlateau, &collision, &pommeMangee);
+                    if (!gagne)
+                    {
+                        if (!collision)
+                        {
+                            usleep(ATTENTE);
+                            if (kbhit() == 1)
+                            {
+                                touche = getchar();
+                            }
+                        }
+                    }
                 }
             }
+            //fait le chemin jusqu'au portail en Y
+            else if (distancePortailY != 0)
+            {
+                direction = (distancePortailY < 0) ? HAUT : BAS;
+                nbMovement = valAbsolu(distancePortailY);
+                deplacement += nbMovement;
+                for (int j = 0; j < nbMovement && touche != STOP ; j++)
+                {
+                    progresser(lesX, lesY, direction, lePlateau, &collision, &pommeMangee);
+                    if (!gagne)
+                    {
+                        if (!collision)
+                        {
+                            usleep(ATTENTE);
+                            if (kbhit() == 1)
+                            {
+                                touche = getchar();
+                            }
+                        }
+                    }
+                }
+            }
+            //verifie si le portail est atteint
+            if((lesX[0] == LARGEUR_PLATEAU/2 && lesY[0] == 1) ||
+                (lesX[0] == 1 && lesY[0] == HAUTEUR_PLATEAU/2) ||
+                (lesX[0] == LARGEUR_PLATEAU && lesY[0] == HAUTEUR_PLATEAU/2) ||
+                (lesX[0] == LARGEUR_PLATEAU/2 && lesY[0] == HAUTEUR_PLATEAU))
+                {portail = 0;}
+
+        }
+        else
+        {
+            
+            if ((i % 4 == valX1Modulo || i % 4 == valX2Modulo) && distancePommeX != 0)
+            {
+                direction = (distancePommeX < 0) ? GAUCHE : DROITE;
+                nbMovement = valAbsolu(distancePommeX);
+                deplacement += nbMovement;
+                for (int j = 0; j < nbMovement && touche != STOP; j++)
+                {
+                    progresser(lesX, lesY, direction, lePlateau, &collision, &pommeMangee);
+                    if (!gagne)
+                    {
+                        if (!collision)
+                        {
+                            usleep(ATTENTE);
+                            if (kbhit() == 1)
+                            {
+                                touche = getchar();
+                            }
+                        }
+                    }
+                }
+            }
+            else if (distancePommeY != 0)
+            {
+                direction = (distancePommeY < 0) ? HAUT : BAS;
+                nbMovement = valAbsolu(distancePommeY);
+                deplacement += nbMovement;
+                for (int j = 0; j < nbMovement && touche != STOP ; j++)
+                {
+                    progresser(lesX, lesY, direction, lePlateau, &collision, &pommeMangee);
+                    if (!gagne)
+                    {
+                        if (!collision)
+                        {
+                            usleep(ATTENTE);
+                            if (kbhit() == 1)
+                            {
+                                touche = getchar();
+                            }
+                        }
+                    }
+                }
+            }
+            if (pommeMangee)
+            {
+                nbPommes++;
+                gagne = (nbPommes == NB_POMMES);
+                if (!gagne)
+                {
+                    ajouterPomme(lePlateau, &xPomme, &yPomme, nbPommes);
+                    pommeMangee = false;
+                }
+                // inverce l'ordre des deplacement quand necesaire
+                if ((distancePommeX == 0) ^ (distancePommeY == 0))
+                {
+                    valX1Modulo = (valX1Modulo + 1) % 4;
+                    valX2Modulo = (valX2Modulo + 1) % 4;
+                }
+            }
+            i++;
         }
     } while (touche != STOP && !collision && !gagne);
     fin_t = clock();
@@ -210,54 +325,138 @@ void dessinerSerpent(int lesX[], int lesY[])
     }
     afficher(lesX[0], lesY[0], TETE);
 }
+
 void calculDistance(int endroitX, int lesX[], int endroitY, int lesY[], int *movX, int *movY)
 {
     *movX = endroitX - lesX[0];
     *movY = endroitY - lesY[0];
 }
+
 int valAbsolu(int valeur)
 {
     return (valeur < 0) ? -valeur : valeur;
 }
-int peutPrendPortail(int lesX[], int lesY[], int xPomme, int yPomme)
+void choixDirection(int lesX[], int lesY[], int xPomme, int yPomme, int *portail,int *distancePommeX,int *distancePommeY)
 {
     // on decide quel portail prendre celon la position de la pomme et du serpent
-    int portail;
+
+    // ecart divition les dimention du plateau toujours >= a 1;
+    int movX,movY;
     portail = 0;
-    if(xPomme != LARGEUR_PLATEAU/2 && yPomme != HAUTEUR_PLATEAU/2)
+    calculDistance(xPomme,lesX,yPomme,lesY,&*distancePommeX, &*distancePommeY);
+    movX = valAbsolu(*distancePommeX);
+    movY = valAbsolu(*distancePommeY);
+    if(movX >= LARGEUR_PLATEAU/2)
     {
-        if(xPomme <= LARGEUR_PLATEAU/4)
+        if(LARGEUR_PLATEAU>HAUTEUR_PLATEAU)
         {
-
-            if(lesX[0] >= (LARGEUR_PLATEAU/4)*3) portail = P_DROITE;
-
-            else if(yPomme <= HAUTEUR_PLATEAU/4 && (lesY[0] >= (HAUTEUR_PLATEAU/4)*3 || lesX[0] >= LARGEUR_PLATEAU/2 && lesY[0] >= HAUTEUR_PLATEAU/2))
+            if(valAbsolu(movX)>= movY*QUOTIEN_DIMENTION)
             {
-                portail = P_BAS;
+                if(*distancePommeX > 0)
+                {
+                    *portail = P_DROITE;
+                }
+                else
+                {
+                    *portail = P_GAUCHE;
+                }
             }
-            else if(yPomme >= (HAUTEUR_PLATEAU/4)*3 && (lesY[0] <= HAUTEUR_PLATEAU/4 || lesX[0] >= LARGEUR_PLATEAU/2 && lesY[0] <= HAUTEUR_PLATEAU/2))
+            else
             {
-                portail = P_HAUT;
+                if(*distancePommeY > 0)
+                {
+                    *portail = P_BAS;
+                }
+                else
+                {
+                    *portail = P_HAUT;
+                }
             }
         }
-        else if(xPomme >= (LARGEUR_PLATEAU/4)*3)
+        else
         {
-
-            if(lesX[0] <= LARGEUR_PLATEAU/4) portail = P_DROITE;
-
-            else if(yPomme <= HAUTEUR_PLATEAU/4 && (lesY[0] >= (HAUTEUR_PLATEAU/4)*3 || lesX[0] <= LARGEUR_PLATEAU/2 && lesY[0] >= HAUTEUR_PLATEAU/2))
+            if(movX*QUOTIEN_DIMENTION >= movY)
             {
-                portail = P_BAS;
+                if(*distancePommeX > 0)
+                {
+                    *portail = P_DROITE;
+                }
+                else
+                {
+                    *portail = P_GAUCHE;
+                }
             }
-            else if(yPomme >= (HAUTEUR_PLATEAU/4)*3 && (lesY[0] <= HAUTEUR_PLATEAU/4 || lesX[0] <= LARGEUR_PLATEAU/2 && lesY[0] <= HAUTEUR_PLATEAU/2))
+            else
             {
-                portail = P_HAUT;
+                if(*distancePommeY > 0)
+                {
+                    *portail = P_BAS;
+                }
+                else
+                {
+                    *portail = P_HAUT;
+                }
             }
         }
-        else if(yPomme <= HAUTEUR_PLATEAU/4 && lesY[0] >= (LARGEUR_PLATEAU/4)*3) portail = P_BAS;
-        else if(yPomme >= (HAUTEUR_PLATEAU/4)*3 && lesY[0] <= LARGEUR_PLATEAU/4) portail = P_HAUT;
     }
-    return portail;
+    else if(movY >= HAUTEUR_PLATEAU)
+    {
+        if(*distancePommeY > 0)
+        {
+            *portail = P_BAS;
+        }
+        else
+        {
+            *portail = P_HAUT;
+        }
+    }
+    if(*portail == P_BAS || *portail == P_HAUT )
+    {
+        if(*distancePommeY > 0)
+        {
+            *distancePommeY = valAbsolu(*distancePommeY-(HAUTEUR_PLATEAU+1));
+        }
+        else
+        {
+            *distancePommeY = -valAbsolu(*distancePommeY-(HAUTEUR_PLATEAU+1));
+        }
+    }
+    else if(*portail == P_GAUCHE || *portail == P_DROITE )
+    {
+        if(*distancePommeX > 0)
+        {
+            *distancePommeX = valAbsolu(*distancePommeX-(HAUTEUR_PLATEAU+1));
+        }
+        else
+        {
+            *distancePommeX = -valAbsolu(*distancePommeX-(HAUTEUR_PLATEAU+1));
+        }
+    }
+        
+}
+void vaVersPortail(int portail, int lesX[], int lesY[], int *distancePortailX, int *distancePortailY)
+{
+    if(portail == P_HAUT)
+    {
+        *distancePortailX = (LARGEUR_PLATEAU/2) - lesX[0];
+        *distancePortailY = 1 - lesY[0];
+    }
+    else if(portail == P_GAUCHE)
+    {
+        *distancePortailX = 1 - lesX[0];
+        *distancePortailY = (HAUTEUR_PLATEAU/2) - lesY[0];
+    }
+    else if(portail == P_DROITE)
+    {
+        *distancePortailX = LARGEUR_PLATEAU - lesX[0];
+        *distancePortailY = (HAUTEUR_PLATEAU/2) - lesY[0];
+    }
+    else
+    {
+        *distancePortailX = (LARGEUR_PLATEAU/2) - lesX[0];
+        *distancePortailY = HAUTEUR_PLATEAU - lesY[0];
+    }
+    
 }
 void progresser(int lesX[], int lesY[], char direction, tPlateau plateau, bool *collision, bool *pomme)
 {
@@ -305,7 +504,7 @@ void progresser(int lesX[], int lesY[], char direction, tPlateau plateau, bool *
     {
         for (int i = 1; i < TAILLE; i++)
         {
-            if(lesX[0] == lesX[i] && lesY[0] == lesY[i]) *collision = true
+            if(lesX[0] == lesX[i] && lesY[0] == lesY[i]) *collision = true;
         }
     }
     dessinerSerpent(lesX, lesY);

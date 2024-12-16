@@ -223,7 +223,8 @@ void demiTour(int lesX[], int lesY[], char directionDT)
     switch (directionDT)
     {
     case HAUT:
-        if (lesX[0] != LARGEUR_PLATEAU)
+
+        if ((lesX[0] + 1) != LARGEUR_PLATEAU)
         {
             directionDemiTour = DROITE;
             progresser(lesX, lesY, directionDemiTour);
@@ -238,71 +239,116 @@ void demiTour(int lesX[], int lesY[], char directionDT)
             directionDemiTour = BAS;
             progresser(lesX, lesY, directionDemiTour);
         }
+        else
+        {
+            directionDemiTour = GAUCHE;
+            progresser(lesX, lesY, directionDemiTour);
+            directionDemiTour = BAS;
+            for (int i = 0; i < 4; i++)
+            {
+                progresser(lesX, lesY, directionDemiTour);
+            }
+            directionDemiTour = DROITE;
+            progresser(lesX, lesY, directionDemiTour);
+
+            directionDemiTour = BAS;
+            progresser(lesX, lesY, directionDemiTour);
+        }
         break;
     case BAS:
-        if (lesX[0]++ != LARGEUR_PLATEAU)
+        if ((lesX[0] + 1) != LARGEUR_PLATEAU)
         {
-            lesX[0]++;
-            lesY[0]--;
-            for (int i = 1; i < TAILLE; i++)
+            directionDemiTour = DROITE;
+            progresser(lesX, lesY, directionDemiTour);
+            directionDemiTour = HAUT;
+            for (int i = 0; i < 4; i++)
             {
-                lesX[i] = lesX[i - 1];
-                lesY[i] = lesY[i - 1];
+                progresser(lesX, lesY, directionDemiTour);
             }
+            directionDemiTour = GAUCHE;
+            progresser(lesX, lesY, directionDemiTour);
+
+            directionDemiTour = HAUT;
+            progresser(lesX, lesY, directionDemiTour);
         }
         else
         {
-            lesX[0]--;
-            lesY[0]--;
-            for (int i = 1; i < TAILLE; i++)
+            directionDemiTour = GAUCHE;
+            progresser(lesX, lesY, directionDemiTour);
+            directionDemiTour = HAUT;
+            for (int i = 0; i < 4; i++)
             {
-                lesX[i] = lesX[i - 1];
-                lesY[i] = lesY[i - 1];
+                progresser(lesX, lesY, directionDemiTour);
             }
+            directionDemiTour = DROITE;
+            progresser(lesX, lesY, directionDemiTour);
+
+            directionDemiTour = HAUT;
+            progresser(lesX, lesY, directionDemiTour);
         }
         break;
     case DROITE:
-        if (lesY[0]++ != HAUTEUR_PLATEAU)
+        if ((lesY[0] - 1) != 1)
         {
-            lesX[0]++;
-            lesY[0]++;
-            for (int i = 1; i < TAILLE; i++)
+            directionDemiTour = HAUT;
+            progresser(lesX, lesY, directionDemiTour);
+            directionDemiTour = GAUCHE;
+            for (int i = 0; i < 4; i++)
             {
-                lesX[i] = lesX[i - 1];
-                lesY[i] = lesY[i - 1];
+                progresser(lesX, lesY, directionDemiTour);
             }
+            directionDemiTour = BAS;
+            progresser(lesX, lesY, directionDemiTour);
+
+            directionDemiTour = GAUCHE;
+            progresser(lesX, lesY, directionDemiTour);
         }
         else
         {
-            lesX[0]++;
-            lesY[0]--;
-            for (int i = 1; i < TAILLE; i++)
+            directionDemiTour = BAS;
+            progresser(lesX, lesY, directionDemiTour);
+            directionDemiTour = GAUCHE;
+            for (int i = 0; i < 4; i++)
             {
-                lesX[i] = lesX[i - 1];
-                lesY[i] = lesY[i - 1];
+                progresser(lesX, lesY, directionDemiTour);
             }
+            directionDemiTour = HAUT;
+            progresser(lesX, lesY, directionDemiTour);
+
+            directionDemiTour = GAUCHE;
+            progresser(lesX, lesY, directionDemiTour);
         }
         break;
     case GAUCHE:
-        if (lesY[0]-- != HAUTEUR_PLATEAU)
+        if ((lesY[0] - 1) != 1)
         {
-            lesX[0]--;
-            lesY[0]++;
-            for (int i = 1; i < TAILLE; i++)
+            directionDemiTour = HAUT;
+            progresser(lesX, lesY, directionDemiTour);
+            directionDemiTour = DROITE;
+            for (int i = 0; i < 4; i++)
             {
-                lesX[i] = lesX[i - 1];
-                lesY[i] = lesY[i - 1];
+                progresser(lesX, lesY, directionDemiTour);
             }
+            directionDemiTour = BAS;
+            progresser(lesX, lesY, directionDemiTour);
+
+            directionDemiTour = DROITE;
+            progresser(lesX, lesY, directionDemiTour);
         }
         else
         {
-            lesX[0]--;
-            lesY[0]--;
-            for (int i = 1; i < TAILLE; i++)
+            directionDemiTour = BAS;
+            progresser(lesX, lesY, directionDemiTour);
+            directionDemiTour = DROITE;
+            for (int i = 0; i < 4; i++)
             {
-                lesX[i] = lesX[i - 1];
-                lesY[i] = lesY[i - 1];
+                progresser(lesX, lesY, directionDemiTour);
             }
+            directionDemiTour = HAUT;
+            progresser(lesX, lesY, directionDemiTour);
+
+            directionDemiTour = DROITE;
+            progresser(lesX, lesY, directionDemiTour);
         }
         break;
     }
@@ -415,7 +461,6 @@ void progresser(int lesX[], int lesY[], char direction)
         lesX[0] = lesX[0] - 1;
         break;
     }
-
     usleep(ATTENTE);
     dessinerSerpent(lesX, lesY);
 }

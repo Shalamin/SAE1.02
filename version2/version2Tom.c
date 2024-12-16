@@ -37,6 +37,11 @@
 #define P_DROITE 3
 #define P_BAS 4
 
+//variable globale
+// revoie la divition des dimention du plateau toujours supérieur ou égale à 1;
+int QUOTIEN_DIMENTION = (LARGEUR_PLATEAU>HAUTEUR_PLATEAU)? LARGEUR_PLATEAU/HAUTEUR_PLATEAU : HAUTEUR_PLATEAU/LARGEUR_PLATEAU;
+
+
 
 // définition d'un type pour le plateau : tPlateau
 // Attention, pour que les indices du tableau 2D (qui commencent à 0) coincident
@@ -54,10 +59,10 @@ void ajouterPomme(tPlateau plateau, int *xPomme, int *yPomme,int nbPommes);
 void afficher(int, int, char);
 void effacer(int x, int y);
 void dessinerSerpent(int lesX[], int lesY[]);
-void calculDistance(int positionX, int lesX[], int positionY, int lesY[], int *movX, int *movY);
+void calculDistance(int endroitX, int lesX[], int endroitY, int lesY[], int *movX, int *movY);
 int valAbsolu(int valeur);
+void choixDirection(int lesX[], int lesY[], int xPomme, int yPomme, int *portail,int *distancePommeX,int *distancePommeY);
 void vaVersPortail(int portail, int lesX[], int lesY[], int *distancePortailX, int *distancePortailY);
-void choixPortail(int lesX[], int lesY[], int xPomme, int yPomme, int *portail,int *distancePommeX,int *distancePommeY, int *distancePortailX, int *distancePortailY);
 void progresser(int lesX[], int lesY[], char direction, tPlateau plateau, bool *collision, bool *pomme);
 void finDuJeu(int numeroPomme, time_t debut_t, time_t fin_t);
 void gotoxy(int x, int y);
@@ -129,7 +134,126 @@ int main()
     debut_t = clock();
     do
     {   
-        //a faire
+        choixDirection(lesX, lesY, xPomme, yPomme, &portail, &distancePommeX, &distancePommeY);
+        if(portail > 0)
+        {
+            //calcule la direction pour allez au portail
+            vaVersPortail(portail, lesX, lesY, &distancePortailX, &distancePortailY);
+            //fait le chemin jusqu'au portail en X
+            if ((i % 4 == valX1Modulo || i % 4 == valX2Modulo) && distancePortailX != 0)
+            {
+                direction = (distancePortailX < 0) ? GAUCHE : DROITE;
+                nbMovement = valAbsolu(distancePortailX);
+                deplacement += nbMovement;
+                for (int j = 0; j < nbMovement && touche != STOP; j++)
+                {
+                    progresser(lesX, lesY, direction, lePlateau, &collision, &pommeMangee);
+                    if (!gagne)
+                    {
+                        if (!collision)
+                        {
+                            usleep(ATTENTE);
+                            if (kbhit() == 1)
+                            {
+                                touche = getchar();
+                            }
+                        }
+                    }
+                }
+            }
+            //fait le chemin jusqu'au portail en Y
+            else if (distancePortailY != 0)
+            {
+                direction = (distancePortailY < 0) ? HAUT : BAS;
+                nbMovement = valAbsolu(distancePortailY);
+                deplacement += nbMovement;
+                for (int j = 0; j < nbMovement && touche != STOP ; j++)
+                {
+                    progresser(lesX, lesY, direction, lePlateau, &collision, &pommeMangee);
+                    if (!gagne)
+                    {
+                        if (!collision)
+                        {
+                            usleep(ATTENTE);
+                            if (kbhit() == 1)
+                            {
+                                touche = getchar();
+                            }
+                        }
+                    }
+                }
+            }
+            //verifie si le portail est atteint
+            if((lesX[0] == LARGEUR_PLATEAU/2 && lesY[0] == 1) ||
+                (lesX[0] == 1 && lesY[0] == HAUTEUR_PLATEAU/2) ||
+                (lesX[0] == LARGEUR_PLATEAU && lesY[0] == HAUTEUR_PLATEAU/2) ||
+                (lesX[0] == LARGEUR_PLATEAU/2 && lesY[0] == HAUTEUR_PLATEAU))
+                {portail = 0;}
+
+        }
+        else
+        {
+            
+            if ((i % 4 == valX1Modulo || i % 4 == valX2Modulo) && distancePommeX != 0)
+            {
+                direction = (distancePommeX < 0) ? GAUCHE : DROITE;
+                nbMovement = valAbsolu(distancePommeX);
+                deplacement += nbMovement;
+                for (int j = 0; j < nbMovement && touche != STOP; j++)
+                {
+                    progresser(lesX, lesY, direction, lePlateau, &collision, &pommeMangee);
+                    if (!gagne)
+                    {
+                        if (!collision)
+                        {
+                            usleep(ATTENTE);
+                            if (kbhit() == 1)
+                            {
+                                touche = getchar();
+                            }
+                        }
+                    }
+                }
+            }
+            else if (distancePommeY != 0)
+            {
+                direction = (distancePommeY < 0) ? HAUT : BAS;
+                nbMovement = valAbsolu(distancePommeY);
+                deplacement += nbMovement;
+                for (int j = 0; j < nbMovement && touche != STOP ; j++)
+                {
+                    progresser(lesX, lesY, direction, lePlateau, &collision, &pommeMangee);
+                    if (!gagne)
+                    {
+                        if (!collision)
+                        {
+                            usleep(ATTENTE);
+                            if (kbhit() == 1)
+                            {
+                                touche = getchar();
+                            }
+                        }
+                    }
+                }
+            }
+            if (pommeMangee)
+            {
+                nbPommes++;
+                gagne = (nbPommes == NB_POMMES);
+                if (!gagne)
+                {
+                    ajouterPomme(lePlateau, &xPomme, &yPomme, nbPommes);
+                    pommeMangee = false;
+                }
+                // inverce l'ordre des deplacement quand necesaire
+                if ((distancePommeX == 0) ^ (distancePommeY == 0))
+                {
+                    valX1Modulo = (valX1Modulo + 1) % 4;
+                    valX2Modulo = (valX2Modulo + 1) % 4;
+                }
+            }
+            i++;
+        }
     } while (touche != STOP && !collision && !gagne);
     fin_t = clock();
     enableEcho();
@@ -203,237 +327,139 @@ void dessinerSerpent(int lesX[], int lesY[])
     afficher(lesX[0], lesY[0], TETE);
 }
 
-void calculDistance(int positionX, int lesX[], int positionY, int lesY[], int *movX, int *movY)
+void calculDistance(int endroitX, int lesX[], int endroitY, int lesY[], int *movX, int *movY)
 {
-    //calcul la différence des possition entre une case  de position positionX et positionY et la tête du serpent  
-    *movX = positionX - lesX[0];
-    *movY = positionX - lesY[0];
+    *movX = endroitX - lesX[0];
+    *movY = endroitY - lesY[0];
 }
 
 int valAbsolu(int valeur)
 {
     return (valeur < 0) ? -valeur : valeur;
 }
+void choixDirection(int lesX[], int lesY[], int xPomme, int yPomme, int *portail,int *distancePommeX,int *distancePommeY)
+{
+    // on decide quel portail prendre celon la position de la pomme et du serpent
 
+    // ecart divition les dimention du plateau toujours >= a 1;
+
+    int movX,movY;
+    portail = 0;
+    calculDistance(xPomme,lesX,yPomme,lesY,&*distancePommeX, &*distancePommeY);
+    movX = valAbsolu(*distancePommeX);
+    movY = valAbsolu(*distancePommeY);
+    if(movX >= LARGEUR_PLATEAU/2)
+    {
+        if(LARGEUR_PLATEAU>HAUTEUR_PLATEAU)
+        {
+            if(valAbsolu(movX)>= movY*QUOTIEN_DIMENTION)
+            {
+                if(*distancePommeX > 0)
+                {
+                    *portail = P_DROITE;
+                }
+                else
+                {
+                    *portail = P_GAUCHE;
+                }
+            }
+            else
+            {
+                if(*distancePommeY > 0)
+                {
+                    *portail = P_BAS;
+                }
+                else
+                {
+                    *portail = P_HAUT;
+                }
+            }
+        }
+        else
+        {
+            if(movX*QUOTIEN_DIMENTION >= movY)
+            {
+                if(*distancePommeX > 0)
+                {
+                    *portail = P_DROITE;
+                }
+                else
+                {
+                    *portail = P_GAUCHE;
+                }
+            }
+            else
+            {
+                if(*distancePommeY > 0)
+                {
+                    *portail = P_BAS;
+                }
+                else
+                {
+                    *portail = P_HAUT;
+                }
+            }
+        }
+    }
+    else if(movY >= HAUTEUR_PLATEAU)
+    {
+        if(*distancePommeY > 0)
+        {
+            *portail = P_BAS;
+        }
+        else
+        {
+            *portail = P_HAUT;
+        }
+    }
+    if(*portail == P_BAS || *portail == P_HAUT )
+    {
+        if(*distancePommeY > 0)
+        {
+            *distancePommeY = valAbsolu(*distancePommeY-(HAUTEUR_PLATEAU+1));
+        }
+        else
+        {
+            *distancePommeY = -valAbsolu(*distancePommeY-(HAUTEUR_PLATEAU+1));
+        }
+    }
+    else if(*portail == P_GAUCHE || *portail == P_DROITE )
+    {
+        if(*distancePommeX > 0)
+        {
+            *distancePommeX = valAbsolu(*distancePommeX-(HAUTEUR_PLATEAU+1));
+        }
+        else
+        {
+            *distancePommeX = -valAbsolu(*distancePommeX-(HAUTEUR_PLATEAU+1));
+        }
+    }
+        
+}
 void vaVersPortail(int portail, int lesX[], int lesY[], int *distancePortailX, int *distancePortailY)
 {
-    //calcul et renvoie la ditance avec le portail souhaiter 
     if(portail == P_HAUT)
     {
-        calculDistance((LARGEUR_PLATEAU/2), lesX, 1, lesY, &(*distancePortailX), &(*distancePortailY));
+        *distancePortailX = (LARGEUR_PLATEAU/2) - lesX[0];
+        *distancePortailY = 1 - lesY[0];
     }
     else if(portail == P_GAUCHE)
     {
-        calculDistance(1, lesX, (HAUTEUR_PLATEAU/2), lesY, &(*distancePortailX), &(*distancePortailY));
+        *distancePortailX = 1 - lesX[0];
+        *distancePortailY = (HAUTEUR_PLATEAU/2) - lesY[0];
     }
     else if(portail == P_DROITE)
     {
-        calculDistance(LARGEUR_PLATEAU, lesX, (HAUTEUR_PLATEAU/2), lesY, &(*distancePortailX), &(*distancePortailY));
+        *distancePortailX = LARGEUR_PLATEAU - lesX[0];
+        *distancePortailY = (HAUTEUR_PLATEAU/2) - lesY[0];
     }
     else
     {
-        calculDistance((LARGEUR_PLATEAU/2), lesX, HAUTEUR_PLATEAU, lesY, &(*distancePortailX), &(*distancePortailY));
+        *distancePortailX = (LARGEUR_PLATEAU/2) - lesX[0];
+        *distancePortailY = HAUTEUR_PLATEAU - lesY[0];
     }
     
 }
-
-void choixPortail(int lesX[], int lesY[], int xPomme, int yPomme, int *portail,int *distancePommeX,int *distancePommeY, int *distancePortailX, int *distancePortailY)
-{
-    //choisie si il faut prendre un portail et quel portail prendre
-    //et calcule renvoie la valeur des distance du portail et de la pomme
-    int distancePortail1X, distancePortail1Y, distancePortail2X, distancePortail2Y, nbMov1, nbMov2, nbMov3;
-    int distancePommeAvecPortail1X, distancePommeAvecPortail1Y, distancePommeAvecPortail2X, distancePommeAvecPortail2Y;
-    calculDistance(xPomme, lesX, yPomme, lesY, &(*distancePommeX), &(*distancePommeY));
-    //cherche si il faut prendre un portail quand la pomme sur la gauche
-    if(xPomme < LARGEUR_PLATEAU/2)
-    {
-        //cherche si il faut prendre un portail quand la pomme est en haut à gauche
-        if(yPomme < HAUTEUR_PLATEAU/2)
-        {
-            //calcul la distance jusqu'au portail
-            vaVersPortail(P_BAS, lesX, lesY, &distancePortail1X, &distancePortail1Y);
-            vaVersPortail(P_DROITE, lesX, lesY, &distancePortail2X, &distancePortail2Y);
-            //calcul la distance a la pomme en prenent un portail
-            distancePommeAvecPortail1X = *distancePommeX-distancePortail1X;
-            distancePommeAvecPortail1Y = *distancePommeY-distancePortail1Y;
-            distancePommeAvecPortail2X = *distancePommeX-distancePortail2X;
-            distancePommeAvecPortail2Y = *distancePommeY-distancePortail2Y;
-            //calcul le nombre de mouvement  pour chacun des trois parcoure
-            nbMov1 = valAbsolu(distancePommeAvecPortail1X) + valAbsolu(distancePommeAvecPortail1Y);
-            nbMov2 = valAbsolu(distancePommeAvecPortail2X) + valAbsolu(distancePommeAvecPortail2Y);
-            nbMov3 = valAbsolu(*distancePommeY) + valAbsolu(*distancePommeY);
-            if(nbMov1 < nbMov3)
-            {
-                if(nbMov1 < nbMov2)
-                {
-                    *portail = P_BAS;
-                    *distancePommeX = distancePommeAvecPortail1X;
-                    *distancePommeY = distancePommeAvecPortail1Y;
-                }
-                else if(nbMov2 < nbMov3)
-                {
-                    *portail = P_DROITE;
-                    *distancePommeX = distancePommeAvecPortail2X;
-                    *distancePommeY = distancePommeAvecPortail2Y;
-                }
-                else
-                {
-                    *portail = 0;
-                }
-            }
-            else if(nbMov2 < nbMov3)
-            {
-                *portail = P_DROITE;
-                *distancePommeX = distancePommeAvecPortail2X;
-                *distancePommeY = distancePommeAvecPortail2Y;
-            }
-            else 
-            {
-                *portail = 0;
-            }
-        }
-        //cherche si il faut prendre un portail quand la pomme est en bas à gauche
-        else
-        {
-            //calcul la distance jusqu'au portail
-            vaVersPortail(P_HAUT, lesX, lesY, &distancePortail1X, &distancePortail1Y);
-            vaVersPortail(P_DROITE, lesX, lesY, &distancePortail2X, &distancePortail2Y);
-            //calcul la distance a la pomme en prenent un portail
-            distancePommeAvecPortail1X = *distancePommeX-distancePortail1X;
-            distancePommeAvecPortail1Y = *distancePommeY-distancePortail1Y;
-            distancePommeAvecPortail2X = *distancePommeX-distancePortail2X;
-            distancePommeAvecPortail2Y = *distancePommeY-distancePortail2Y;
-            //calcul le nombre de mouvement  pour chacun des trois parcoure
-            nbMov1 = valAbsolu((*distancePommeX-distancePortail1X)) + valAbsolu((*distancePommeY-distancePortail1Y));
-            nbMov2 = valAbsolu((*distancePommeX-distancePortail2X)) + valAbsolu((*distancePommeY-distancePortail2Y));
-            nbMov3 = valAbsolu(*distancePommeX) + valAbsolu(*distancePommeY);
-            if(nbMov1 < nbMov3)
-            {
-                if(nbMov1 < nbMov2)
-                {
-                    *portail = P_HAUT;
-                    *distancePommeX = distancePommeAvecPortail1X;
-                    *distancePommeY = distancePommeAvecPortail1Y;
-                }
-                else if(nbMov2 < nbMov3)
-                {
-                    *portail = P_DROITE;
-                    *distancePommeX = distancePommeAvecPortail2X;
-                    *distancePommeY = distancePommeAvecPortail2Y;
-                }
-                else
-                {
-                    *portail = 0;
-                }
-            }
-            else if(nbMov2 < nbMov3)
-            {
-                *portail = P_DROITE;
-                *distancePommeX = distancePommeAvecPortail2X;
-                *distancePommeY = distancePommeAvecPortail2Y;
-            }
-            else 
-            {
-                *portail = 0;
-            }
-        }
-    }
-    //cherche si il faut prendre un portail quand la pomme sur la droite
-    else
-    {
-        //cherche si il faut prendre un portail quand la pomme est en haut à droite
-        if(yPomme < HAUTEUR_PLATEAU/2)
-        {
-            //calcul la distance jusqu'au portail
-            vaVersPortail(P_BAS, lesX, lesY, &distancePortail1X, &distancePortail1Y);
-            vaVersPortail(P_GAUCHE, lesX, lesY, &distancePortail2X, &distancePortail2Y);
-            //calcul la distance a la pomme en prenent un portail
-            distancePommeAvecPortail1X = *distancePommeX-distancePortail1X;
-            distancePommeAvecPortail1Y = *distancePommeY-distancePortail1Y;
-            distancePommeAvecPortail2X = *distancePommeX-distancePortail2X;
-            distancePommeAvecPortail2Y = *distancePommeY-distancePortail2Y;
-            //calcul le nombre de mouvement  pour chacun des trois parcoure
-            nbMov1 = valAbsolu((*distancePommeX-distancePortail1X)) + valAbsolu((*distancePommeY-distancePortail1Y));
-            nbMov2 = valAbsolu((*distancePommeX-distancePortail2X)) + valAbsolu((*distancePommeY-distancePortail2Y));
-            nbMov3 = valAbsolu(*distancePommeX) + valAbsolu(*distancePommeY);
-            if(nbMov1 < nbMov3)
-            {
-                if(nbMov1 < nbMov2)
-                {
-                    *portail = P_BAS;
-                    *distancePommeX = distancePommeAvecPortail1X;
-                    *distancePommeY = distancePommeAvecPortail1Y;
-                }
-                else if(nbMov2 < nbMov3)
-                {
-                    *portail = P_GAUCHE;
-                    *distancePommeX = distancePommeAvecPortail2X;
-                    *distancePommeY = distancePommeAvecPortail2Y;
-                }
-                else
-                {
-                    *portail = 0;
-                }
-            }
-            else if(nbMov2 < nbMov3)
-            {
-                *portail = P_GAUCHE;
-                *distancePommeX = distancePommeAvecPortail2X;
-                *distancePommeY = distancePommeAvecPortail2Y;
-            }
-            else 
-            {
-                *portail = 0;
-            }
-        }
-        //cherche si il faut prendre un portail quand la pomme est en bas à droite
-        else
-        {
-            //calcul la distance jusqu'au portail
-            vaVersPortail(P_HAUT, lesX, lesY, &distancePortail1X, &distancePortail1Y);
-            vaVersPortail(P_GAUCHE, lesX, lesY, &distancePortail2X, &distancePortail2Y);
-            //calcul la distance a la pomme en prenent un portail
-            distancePommeAvecPortail1X = *distancePommeX-distancePortail1X;
-            distancePommeAvecPortail1Y = *distancePommeY-distancePortail1Y;
-            distancePommeAvecPortail2X = *distancePommeX-distancePortail2X;
-            distancePommeAvecPortail2Y = *distancePommeY-distancePortail2Y;
-            //calcul le nombre de mouvement  pour chacun des trois parcoure
-            nbMov1 = valAbsolu((*distancePommeX-distancePortail1X)) + valAbsolu((*distancePommeY-distancePortail1Y));
-            nbMov2 = valAbsolu((*distancePommeX-distancePortail2X)) + valAbsolu((*distancePommeY-distancePortail2Y));
-            nbMov3 = valAbsolu(*distancePommeX) + valAbsolu(*distancePommeY);
-            if(nbMov1 < nbMov3)
-            {
-                if(nbMov1 < nbMov2)
-                {
-                    *portail = P_HAUT;
-                    *distancePommeX = distancePommeAvecPortail1X;
-                    *distancePommeY = distancePommeAvecPortail1Y;
-                }
-                else if(nbMov2 < nbMov3)
-                {
-                    *portail = P_GAUCHE;
-                    *distancePommeX = distancePommeAvecPortail2X;
-                    *distancePommeY = distancePommeAvecPortail2Y;
-                }
-                else
-                {
-                    *portail = 0;
-                }
-            }
-            else if(nbMov2 < nbMov3)
-            {
-                *portail = P_GAUCHE;
-                *distancePommeX = distancePommeAvecPortail2X;
-                *distancePommeY = distancePommeAvecPortail2Y;
-            }
-            else 
-            {
-                *portail = 0;
-            }
-        }
-    }
-}
-
 void progresser(int lesX[], int lesY[], char direction, tPlateau plateau, bool *collision, bool *pomme)
 {
     // efface le dernier élément avant d'actualiser la position de tous les

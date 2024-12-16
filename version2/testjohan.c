@@ -50,8 +50,8 @@ void dessinerSerpent(int lesX[], int lesY[]);
 void definirDirection(char *direction, char *lastDirection, int movX, int movY, int lesX[], int lesY[]);
 void calculMouvement(int xPomme, int lesX[], int yPomme, int lesY[], int *movX, int *movY);
 int valAbsolu(int valeur);
-void progresserEnDemiTour(int lesX[], int lesY[], char direction);
-void progresser(int lesX[], int lesY[], char direction, tPlateau plateau, bool *collision, bool *pomme);
+void gestionCollisions(int lesX[], int lesY[], tPlateau plateau, bool *collision, bool *pomme);
+void progresser(int lesX[], int lesY[], char direction);
 void finDuJeu(int numeroPomme, time_t debut_t, time_t fin_t, int deplacement);
 void gotoxy(int x, int y);
 int kbhit();
@@ -127,12 +127,12 @@ int main()
 
         definirDirection(&direction, &lastDirection, movX, movY, lesX, lesY);
 
-        progresser(lesX, lesY, direction, lePlateau, &collision, &pommeMangee);
+        progresser(lesX, lesY, direction);
+        gestionCollisions(lesX, lesY, lePlateau, &collision, &pommeMangee);
         if (!gagne)
         {
             if (!collision)
             {
-                usleep(ATTENTE);
                 if (kbhit() == 1)
                 {
                     touche = getchar();
@@ -208,6 +208,7 @@ void ajouterPomme(tPlateau plateau, int *xPomme, int *yPomme, int numeroPomme)
 void afficher(int x, int y, char car)
 {
     gotoxy(x, y);
+    fflush(stdout);
     printf("%c", car);
 }
 
@@ -222,30 +223,20 @@ void demiTour(int lesX[], int lesY[], char directionDT)
     switch (directionDT)
     {
     case HAUT:
-        if (lesX[0]++ != LARGEUR_PLATEAU)
+        if (lesX[0] != LARGEUR_PLATEAU)
         {
             directionDemiTour = DROITE;
-
+            progresser(lesX, lesY, directionDemiTour);
             directionDemiTour = BAS;
-            for (int i = 0; i < 5; i++)
+            for (int i = 0; i < 4; i++)
             {
-                progresserEnDemiTour(lesX, lesY, directionDemiTour);
+                progresser(lesX, lesY, directionDemiTour);
             }
             directionDemiTour = GAUCHE;
-            progresserEnDemiTour(lesX, lesY, directionDemiTour);
+            progresser(lesX, lesY, directionDemiTour);
 
             directionDemiTour = BAS;
-            progresserEnDemiTour(lesX, lesY, directionDemiTour);
-        }
-        else
-        {
-            lesX[0]--;
-            lesY[0]++;
-            for (int i = 1; i < TAILLE; i++)
-            {
-                lesX[i] = lesX[i - 1];
-                lesY[i] = lesY[i - 1];
-            }
+            progresser(lesX, lesY, directionDemiTour);
         }
         break;
     case BAS:
@@ -316,34 +307,7 @@ void demiTour(int lesX[], int lesY[], char directionDT)
         break;
     }
 }
-void progresserEnDemiTour(int lesX[], int lesY[], char direction)
-{
-    effacer(lesX[TAILLE - 1], lesY[TAILLE - 1]);
-    // faire progresser la tete dans la nouvelle direction
-    for (int j = TAILLE - 1; j > 0; j--)
-    {
-        lesX[j] = lesX[j - 1];
-        lesY[j] = lesY[j - 1];
-    }
-    switch (direction)
-    {
-    case HAUT:
-        lesY[0] = lesY[0] - 1;
-        break;
-    case BAS:
-        lesY[0] = lesY[0] + 1;
-        break;
-    case DROITE:
-        lesX[0] = lesX[0] + 1;
-        break;
-    case GAUCHE:
-        lesX[0] = lesX[0] - 1;
-        break;
-    }
-    dessinerSerpent(lesX, lesY);
-    fflush(stdout);
-    usleep(ATTENTE);
-}
+
 void definirDirection(char *direction, char *lastDirection, int movX, int movY, int lesX[], int lesY[])
 {
     // @brief Définit la direction du serpent
@@ -423,7 +387,7 @@ int valAbsolu(int valeur)
 {
     return (valeur < 0) ? -valeur : valeur;
 }
-void progresser(int lesX[], int lesY[], char direction, tPlateau plateau, bool *collision, bool *pomme)
+void progresser(int lesX[], int lesY[], char direction)
 {
     // efface le dernier élément avant d'actualiser la position de tous les
     // élémentds du serpent avant de le  redessiner et détecte une
@@ -451,6 +415,12 @@ void progresser(int lesX[], int lesY[], char direction, tPlateau plateau, bool *
         lesX[0] = lesX[0] - 1;
         break;
     }
+
+    usleep(ATTENTE);
+    dessinerSerpent(lesX, lesY);
+}
+void gestionCollisions(int lesX[], int lesY[], tPlateau plateau, bool *collision, bool *pomme)
+{
     // détection d'une "collision" avec une pomme
     if (plateau[lesX[0]][lesY[0]] == POMME)
     {
@@ -463,9 +433,7 @@ void progresser(int lesX[], int lesY[], char direction, tPlateau plateau, bool *
     {
         *collision = true;
     }
-    dessinerSerpent(lesX, lesY);
 }
-
 void finDuJeu(int numeroPomme, time_t debut_t, time_t fin_t, int deplacement)
 {
     /* @brief Fin du programme , message de fin et réactivation de l'écriture dans la console*/

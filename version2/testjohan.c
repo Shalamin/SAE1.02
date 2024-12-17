@@ -233,11 +233,6 @@ void demiTour(int lesX[], int lesY[], char directionDT)
             {
                 progresser(lesX, lesY, directionDemiTour);
             }
-            directionDemiTour = GAUCHE;
-            progresser(lesX, lesY, directionDemiTour);
-
-            directionDemiTour = BAS;
-            progresser(lesX, lesY, directionDemiTour);
         }
         else
         {
@@ -248,11 +243,6 @@ void demiTour(int lesX[], int lesY[], char directionDT)
             {
                 progresser(lesX, lesY, directionDemiTour);
             }
-            directionDemiTour = DROITE;
-            progresser(lesX, lesY, directionDemiTour);
-
-            directionDemiTour = BAS;
-            progresser(lesX, lesY, directionDemiTour);
         }
         break;
     case BAS:
@@ -260,31 +250,12 @@ void demiTour(int lesX[], int lesY[], char directionDT)
         {
             directionDemiTour = DROITE;
             progresser(lesX, lesY, directionDemiTour);
-            directionDemiTour = HAUT;
-            for (int i = 0; i < 4; i++)
-            {
-                progresser(lesX, lesY, directionDemiTour);
-            }
-            directionDemiTour = GAUCHE;
-            progresser(lesX, lesY, directionDemiTour);
-
-            directionDemiTour = HAUT;
-            progresser(lesX, lesY, directionDemiTour);
         }
         else
         {
             directionDemiTour = GAUCHE;
             progresser(lesX, lesY, directionDemiTour);
             directionDemiTour = HAUT;
-            for (int i = 0; i < 4; i++)
-            {
-                progresser(lesX, lesY, directionDemiTour);
-            }
-            directionDemiTour = DROITE;
-            progresser(lesX, lesY, directionDemiTour);
-
-            directionDemiTour = HAUT;
-            progresser(lesX, lesY, directionDemiTour);
         }
         break;
     case DROITE:
@@ -297,11 +268,6 @@ void demiTour(int lesX[], int lesY[], char directionDT)
             {
                 progresser(lesX, lesY, directionDemiTour);
             }
-            directionDemiTour = BAS;
-            progresser(lesX, lesY, directionDemiTour);
-
-            directionDemiTour = GAUCHE;
-            progresser(lesX, lesY, directionDemiTour);
         }
         else
         {
@@ -312,11 +278,6 @@ void demiTour(int lesX[], int lesY[], char directionDT)
             {
                 progresser(lesX, lesY, directionDemiTour);
             }
-            directionDemiTour = HAUT;
-            progresser(lesX, lesY, directionDemiTour);
-
-            directionDemiTour = GAUCHE;
-            progresser(lesX, lesY, directionDemiTour);
         }
         break;
     case GAUCHE:
@@ -329,11 +290,6 @@ void demiTour(int lesX[], int lesY[], char directionDT)
             {
                 progresser(lesX, lesY, directionDemiTour);
             }
-            directionDemiTour = BAS;
-            progresser(lesX, lesY, directionDemiTour);
-
-            directionDemiTour = DROITE;
-            progresser(lesX, lesY, directionDemiTour);
         }
         else
         {
@@ -344,16 +300,10 @@ void demiTour(int lesX[], int lesY[], char directionDT)
             {
                 progresser(lesX, lesY, directionDemiTour);
             }
-            directionDemiTour = HAUT;
-            progresser(lesX, lesY, directionDemiTour);
-
-            directionDemiTour = DROITE;
-            progresser(lesX, lesY, directionDemiTour);
+            break;
         }
-        break;
     }
 }
-
 void definirDirection(char *direction, char *lastDirection, int movX, int movY, int lesX[], int lesY[])
 {
     // @brief Définit la direction du serpent

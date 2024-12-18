@@ -323,7 +323,8 @@ void calculDistance(int positionX, int lesX[], int positionY, int lesY[], int *m
     *movX = positionX - lesX[0];
     *movY = positionY - lesY[0];
 }
-void demiTour(int lesX[], int lesY[], char directionDT){
+void demiTour(int lesX[], int lesY[], char directionDT)
+{
     char directionDemiTour;
     switch (directionDT)
     {
@@ -338,6 +339,10 @@ void demiTour(int lesX[], int lesY[], char directionDT){
             {
                 progresser(lesX, lesY, directionDemiTour);
             }
+            directionDemiTour = GAUCHE;
+            progresser(lesX, lesY, directionDemiTour);
+            directionDemiTour = BAS;
+            progresser(lesX, lesY, directionDemiTour);
         }
         else
         {
@@ -348,6 +353,10 @@ void demiTour(int lesX[], int lesY[], char directionDT){
             {
                 progresser(lesX, lesY, directionDemiTour);
             }
+            directionDemiTour = DROITE;
+            progresser(lesX, lesY, directionDemiTour);
+            directionDemiTour = BAS;
+            progresser(lesX, lesY, directionDemiTour);
         }
         break;
     case BAS:
@@ -373,6 +382,10 @@ void demiTour(int lesX[], int lesY[], char directionDT){
             {
                 progresser(lesX, lesY, directionDemiTour);
             }
+            directionDemiTour = BAS;
+            progresser(lesX, lesY, directionDemiTour);
+            directionDemiTour = GAUCHE;
+            progresser(lesX, lesY, directionDemiTour);
         }
         else
         {
@@ -383,6 +396,10 @@ void demiTour(int lesX[], int lesY[], char directionDT){
             {
                 progresser(lesX, lesY, directionDemiTour);
             }
+            directionDemiTour = HAUT;
+            progresser(lesX, lesY, directionDemiTour);
+            directionDemiTour = GAUCHE;
+            progresser(lesX, lesY, directionDemiTour);
         }
         break;
     case GAUCHE:
@@ -395,6 +412,10 @@ void demiTour(int lesX[], int lesY[], char directionDT){
             {
                 progresser(lesX, lesY, directionDemiTour);
             }
+            directionDemiTour = BAS;
+            progresser(lesX, lesY, directionDemiTour);
+            directionDemiTour = DROITE;
+            progresser(lesX, lesY, directionDemiTour);
         }
         else
         {
@@ -405,6 +426,10 @@ void demiTour(int lesX[], int lesY[], char directionDT){
             {
                 progresser(lesX, lesY, directionDemiTour);
             }
+            directionDemiTour = HAUT;
+            progresser(lesX, lesY, directionDemiTour);
+            directionDemiTour = DROITE;
+            progresser(lesX, lesY, directionDemiTour);
             break;
         }
     }

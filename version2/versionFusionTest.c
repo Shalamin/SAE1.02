@@ -46,8 +46,8 @@
 // et on neutralise la ligne 0 et la colonne 0 du tableau 2D (elles ne sont jamais
 // utilisées)
 typedef char tPlateau[LARGEUR_PLATEAU + 1][HAUTEUR_PLATEAU + 1];
-int lesPommesX[NB_POMMES] = {75, 75, 78, 2, 8, 78, 74, 2, 72, 5};
-int lesPommesY[NB_POMMES] = {8, 39, 2, 2, 5, 39, 33, 38, 35, 2};
+int lesPommesX[NB_POMMES] = {40, 40, 40, 2, 8, 78, 74, 2, 72, 5};
+int lesPommesY[NB_POMMES] = {39, 2, 39, 2, 5, 39, 33, 38, 35, 2};
 
 void initPlateau(tPlateau plateau);
 void dessinerPlateau(tPlateau plateau);
@@ -62,7 +62,7 @@ int calculDistance(int position1, int position2);
 void choixPortail(int lesX[], int lesY[], int xPomme, int yPomme, int *portail, int *distancePommeX, int *distancePommeY, int *distancePortailX, int *distancePortailY);
 void progresser(int lesX[], int lesY[], char direction);
 void gestionCollisions(int lesX[], int lesY[], tPlateau plateau, bool *collision, bool *pomme);
-void finDuJeu(int numeroPomme, time_t debut_t, time_t fin_t);
+void finDuJeu(int numeroPomme, time_t debut_t, time_t fin_t, int nbDeplacement);
 void gotoxy(int x, int y);
 int kbhit();
 void disableEcho();
@@ -88,7 +88,8 @@ int main()
     bool gagne = false;
     bool pommeMangee = false;
     int xPomme, yPomme;
-    int deplacement = 0;
+    //nombre de déplacement total
+    int nbDeplacement = 0;
     clock_t debut_t, fin_t;
     // compteur de pommes mangées
     int nbPommes = 0;
@@ -176,7 +177,7 @@ int main()
         {
             definirDirection(&direction, &lastDirection, &distancePortailX, &distancePortailY, ordreDeplacement, lesX, lesY);
             nbMovement = valAbsolu(distancePortailX);
-            deplacement += nbMovement;
+            nbDeplacement += nbMovement;
             while(i++ < nbMovement && touche != STOP && !collision && !pommeMangee)
             {
                 progresser(lesX, lesY, direction);
@@ -199,11 +200,10 @@ int main()
         {
             definirDirection(&direction, &lastDirection, &distancePortailX, &distancePortailY, ordreDeplacement, lesX, lesY);
             nbMovement = valAbsolu(distancePortailY);
-            deplacement += nbMovement;
+            nbDeplacement += nbMovement;
             while(i++ < nbMovement && touche != STOP && !collision && !pommeMangee)
             {
                 progresser(lesX, lesY, direction);
-                usleep(ATTENTE);
                 gestionCollisions(lesX, lesY, lePlateau, &collision, &pommeMangee);
                 if (!gagne)
                 {
@@ -223,7 +223,7 @@ int main()
         {
             definirDirection(&direction, &lastDirection, &distancePommeX, &distancePommeY, ordreDeplacement, lesX, lesY);
             nbMovement = valAbsolu(distancePommeX);
-            deplacement += nbMovement;
+            nbDeplacement += nbMovement;
             while(i++ < nbMovement && touche != STOP && !collision && !pommeMangee)
             {
                 progresser(lesX, lesY, direction);
@@ -246,7 +246,7 @@ int main()
         {
             definirDirection(&direction, &lastDirection, &distancePommeX, &distancePommeY, ordreDeplacement, lesX, lesY);
             nbMovement = valAbsolu(distancePommeY);
-            deplacement += nbMovement;
+            nbDeplacement += nbMovement;
             while(i++ < nbMovement && touche != STOP && !collision && !pommeMangee)
             {
                 progresser(lesX, lesY, direction);
@@ -278,7 +278,7 @@ int main()
     } while (touche != STOP && !collision && !gagne);
     fin_t = clock();
     enableEcho();
-    finDuJeu(nbPommes, debut_t, fin_t);
+    finDuJeu(nbPommes, debut_t, fin_t, nbDeplacement);
     return EXIT_SUCCESS;
 }
 
@@ -547,11 +547,14 @@ void choixPortail(int lesX[], int lesY[], int xPomme, int yPomme, int *portail,i
             //La pomme est sur la partie en haut à gauche du plateau
 
             //addition le nombre de mouvemant pour allez jusqu'à la pomme pour les différent choix
+
+            //portail en bas
             choixPortail1 = valAbsolu(calculDistance(LARGEUR_PLATEAU/2, lesX[0]))
                           + valAbsolu(calculDistance(xPomme, LARGEUR_PLATEAU/2))
                           + valAbsolu(calculDistance(HAUTEUR_PLATEAU, lesY[0]))
                           + valAbsolu(calculDistance(yPomme, 1));
 
+            //portail à droite
             choixPortail2 = valAbsolu(calculDistance(LARGEUR_PLATEAU, lesX[0]))
                           + valAbsolu(calculDistance(xPomme, 1))
                           + valAbsolu(calculDistance(HAUTEUR_PLATEAU/2, lesY[0]))
@@ -567,14 +570,14 @@ void choixPortail(int lesX[], int lesY[], int xPomme, int yPomme, int *portail,i
                 {
                     *portail = P_BAS;
                     *distancePortailX = calculDistance(LARGEUR_PLATEAU/2, lesX[0]);
-                    *distancePortailY = calculDistance(HAUTEUR_PLATEAU, lesY[0]);
+                    *distancePortailY = calculDistance(HAUTEUR_PLATEAU, lesY[0]) + 1;
                     *distancePommeX = calculDistance(xPomme, LARGEUR_PLATEAU/2);
                     *distancePommeY = calculDistance(yPomme, 1);
                 }
                 else
                 {
                     *portail = P_DROITE;
-                    *distancePortailX = calculDistance(LARGEUR_PLATEAU, lesX[0]);
+                    *distancePortailX = calculDistance(LARGEUR_PLATEAU, lesX[0])  + 1;
                     *distancePortailY = calculDistance(HAUTEUR_PLATEAU/2, lesY[0]);
                     *distancePommeX = calculDistance(xPomme, 1);
                     *distancePommeY = calculDistance(yPomme, HAUTEUR_PLATEAU/2);
@@ -583,7 +586,7 @@ void choixPortail(int lesX[], int lesY[], int xPomme, int yPomme, int *portail,i
             else if(choixPortail2 < nonPortail)
             {
                 *portail = P_DROITE;
-                *distancePortailX = calculDistance(LARGEUR_PLATEAU, lesX[0]);
+                *distancePortailX = calculDistance(LARGEUR_PLATEAU, lesX[0]) + 1;
                 *distancePortailY = calculDistance(HAUTEUR_PLATEAU/2, lesY[0]);
                 *distancePommeX = calculDistance(xPomme, 1);
                 *distancePommeY = calculDistance(yPomme, HAUTEUR_PLATEAU/2);
@@ -600,11 +603,14 @@ void choixPortail(int lesX[], int lesY[], int xPomme, int yPomme, int *portail,i
             //La pomme est sur la partie en bas à gauche du plateau
 
             //addition le nombre de mouvemant pour allez jusqu'à la pomme pour les différent choix
+
+            //portail en haut
             choixPortail1 = valAbsolu(calculDistance(LARGEUR_PLATEAU/2, lesX[0]))
                           + valAbsolu(calculDistance(xPomme, LARGEUR_PLATEAU/2))
                           + valAbsolu(calculDistance(1, lesY[0]))
                           + valAbsolu(calculDistance(yPomme, HAUTEUR_PLATEAU));
 
+            //portail à droite
             choixPortail2 = valAbsolu(calculDistance(LARGEUR_PLATEAU, lesX[0]))
                           + valAbsolu(calculDistance(xPomme, 1))
                           + valAbsolu(calculDistance(HAUTEUR_PLATEAU/2, lesY[0]))
@@ -619,7 +625,7 @@ void choixPortail(int lesX[], int lesY[], int xPomme, int yPomme, int *portail,i
                 if(choixPortail1 < choixPortail2)
                 {
                     *portail = P_HAUT;
-                    *distancePortailX = calculDistance(LARGEUR_PLATEAU/2, lesX[0]);
+                    *distancePortailX = calculDistance(LARGEUR_PLATEAU/2, lesX[0]) - 1;
                     *distancePortailY = calculDistance(1, lesY[0]);
                     *distancePommeX = calculDistance(xPomme, LARGEUR_PLATEAU/2);
                     *distancePommeY = calculDistance(yPomme, HAUTEUR_PLATEAU);
@@ -627,7 +633,7 @@ void choixPortail(int lesX[], int lesY[], int xPomme, int yPomme, int *portail,i
                 else
                 {
                     *portail = P_DROITE;
-                    *distancePortailX = calculDistance(LARGEUR_PLATEAU, lesX[0]);
+                    *distancePortailX = calculDistance(LARGEUR_PLATEAU, lesX[0]) + 1;
                     *distancePortailY = calculDistance(HAUTEUR_PLATEAU/2, lesY[0]);
                     *distancePommeX = calculDistance(xPomme, 1);
                     *distancePommeY = calculDistance(yPomme, HAUTEUR_PLATEAU/2);
@@ -636,7 +642,7 @@ void choixPortail(int lesX[], int lesY[], int xPomme, int yPomme, int *portail,i
             else if(choixPortail2 < nonPortail)
             {
                 *portail = P_DROITE;
-                *distancePortailX = calculDistance(LARGEUR_PLATEAU, lesX[0]);
+                *distancePortailX = calculDistance(LARGEUR_PLATEAU, lesX[0]) + 1;
                 *distancePortailY = calculDistance(HAUTEUR_PLATEAU/2, lesY[0]);
                 *distancePommeX = calculDistance(xPomme, 1);
                 *distancePommeY = calculDistance(yPomme, HAUTEUR_PLATEAU/2);
@@ -656,11 +662,13 @@ void choixPortail(int lesX[], int lesY[], int xPomme, int yPomme, int *portail,i
             //La pomme est sur la partie en haut à droite du plateau
 
             //addition le nombre de mouvemant pour allez jusqu'à la pomme pour les différent choix
+
+            //portail en bas
             choixPortail1 = valAbsolu(calculDistance(LARGEUR_PLATEAU/2, lesX[0]))
                           + valAbsolu(calculDistance(xPomme, LARGEUR_PLATEAU/2))
-                          + valAbsolu(calculDistance(1, lesY[0]))
-                          + valAbsolu(calculDistance(yPomme, HAUTEUR_PLATEAU));
-
+                          + valAbsolu(calculDistance(HAUTEUR_PLATEAU, lesY[0]))
+                          + valAbsolu(calculDistance(yPomme, 1));
+            //portail à gauche
             choixPortail2 = valAbsolu(calculDistance(1, lesX[0]))
                           + valAbsolu(calculDistance(xPomme, LARGEUR_PLATEAU))
                           + valAbsolu(calculDistance(HAUTEUR_PLATEAU/2, lesY[0]))
@@ -674,16 +682,16 @@ void choixPortail(int lesX[], int lesY[], int xPomme, int yPomme, int *portail,i
             {
                 if(choixPortail1 < choixPortail2)
                 {
-                    *portail = P_HAUT;
+                    *portail = P_BAS;
                     *distancePortailX = calculDistance(LARGEUR_PLATEAU/2, lesX[0]);
-                    *distancePortailY = calculDistance(1, lesY[0]);
+                    *distancePortailY = calculDistance(HAUTEUR_PLATEAU, lesY[0]) + 1;
                     *distancePommeX = calculDistance(xPomme, LARGEUR_PLATEAU/2);
-                    *distancePommeY = calculDistance(yPomme, HAUTEUR_PLATEAU);
+                    *distancePommeY = calculDistance(yPomme, 1);
                 }
                 else
                 {
                     *portail = P_GAUCHE;
-                    *distancePortailX = calculDistance(1, lesX[0]);
+                    *distancePortailX = calculDistance(1, lesX[0]) - 1;
                     *distancePortailY = calculDistance(HAUTEUR_PLATEAU/2, lesY[0]);
                     *distancePommeX = calculDistance(xPomme, LARGEUR_PLATEAU);
                     *distancePommeY = calculDistance(yPomme, HAUTEUR_PLATEAU/2);
@@ -692,7 +700,7 @@ void choixPortail(int lesX[], int lesY[], int xPomme, int yPomme, int *portail,i
             else if(choixPortail2 < nonPortail)
             {
                 *portail = P_GAUCHE;
-                *distancePortailX = calculDistance(1, lesX[0]);
+                *distancePortailX = calculDistance(1, lesX[0]) - 1;
                 *distancePortailY = calculDistance(HAUTEUR_PLATEAU/2, lesY[0]);
                 *distancePommeX = calculDistance(xPomme, LARGEUR_PLATEAU);
                 *distancePommeY = calculDistance(yPomme, HAUTEUR_PLATEAU/2);
@@ -709,11 +717,14 @@ void choixPortail(int lesX[], int lesY[], int xPomme, int yPomme, int *portail,i
             //La pomme est sur la partie en haut à froite du plateau
 
             //addition le nombre de mouvemant pour allez jusqu'à la pomme pour les différent choix
+
+            //portail en haut
             choixPortail1 = valAbsolu(calculDistance(LARGEUR_PLATEAU/2, lesX[0]))
                           + valAbsolu(calculDistance(xPomme, LARGEUR_PLATEAU/2))
-                          + valAbsolu(calculDistance(HAUTEUR_PLATEAU, lesY[0]))
-                          + valAbsolu(calculDistance(yPomme, 1));
+                          + valAbsolu(calculDistance(1, lesY[0]))
+                          + valAbsolu(calculDistance(yPomme, HAUTEUR_PLATEAU));
 
+            //portail à gauche
             choixPortail2 = valAbsolu(calculDistance(1, lesX[0]))
                           + valAbsolu(calculDistance(xPomme, LARGEUR_PLATEAU))
                           + valAbsolu(calculDistance(HAUTEUR_PLATEAU/2, lesY[0]))
@@ -726,16 +737,16 @@ void choixPortail(int lesX[], int lesY[], int xPomme, int yPomme, int *portail,i
             {
                 if(choixPortail1 < choixPortail2)
                 {
-                    *portail = P_BAS;
-                    *distancePortailX = calculDistance(LARGEUR_PLATEAU/2, lesX[0]);
-                    *distancePortailY = calculDistance(HAUTEUR_PLATEAU, lesY[0]);
+                    *portail = P_HAUT;
+                    *distancePortailX = calculDistance(LARGEUR_PLATEAU/2, lesX[0]) - 1;
+                    *distancePortailY = calculDistance(1, lesY[0]);
                     *distancePommeX = calculDistance(xPomme, LARGEUR_PLATEAU/2);
-                    *distancePommeY = calculDistance(yPomme, 1);
+                    *distancePommeY = calculDistance(yPomme, HAUTEUR_PLATEAU);
                 }
                 else
                 {
                     *portail = P_GAUCHE;
-                    *distancePortailX = calculDistance(1, lesX[0]);
+                    *distancePortailX = calculDistance(1, lesX[0]) - 1;
                     *distancePortailY = calculDistance(HAUTEUR_PLATEAU/2, lesY[0]);
                     *distancePommeX = calculDistance(xPomme, LARGEUR_PLATEAU);
                     *distancePommeY = calculDistance(yPomme, HAUTEUR_PLATEAU/2);
@@ -744,7 +755,7 @@ void choixPortail(int lesX[], int lesY[], int xPomme, int yPomme, int *portail,i
             else if(choixPortail2 < nonPortail)
             {
                 *portail = P_GAUCHE;
-                *distancePortailX = calculDistance(1, lesX[0]);
+                *distancePortailX = calculDistance(1, lesX[0]) - 1;
                 *distancePortailY = calculDistance(HAUTEUR_PLATEAU/2, lesY[0]);
                 *distancePommeX = calculDistance(xPomme, LARGEUR_PLATEAU);
                 *distancePommeY = calculDistance(yPomme, HAUTEUR_PLATEAU/2);
@@ -788,7 +799,10 @@ void progresser(int lesX[], int lesY[], char direction)
     case GAUCHE:
         lesX[0] = (lesX[0] - 1);
         break;
-    }
+    } 
+    // dessine le serpent
+    dessinerSerpent(lesX, lesY);
+    fflush(stdout);
     if(((lesX[0] == 1 || lesX[0] == LARGEUR_PLATEAU) && lesY[0] == HAUTEUR_PLATEAU/2))
     {
         lesX[0] = valAbsolu(lesX[0]-(LARGEUR_PLATEAU+1));
@@ -796,10 +810,7 @@ void progresser(int lesX[], int lesY[], char direction)
     else if((lesY[0] == 1 || lesY[0] == HAUTEUR_PLATEAU) && lesX[0] == LARGEUR_PLATEAU/2)
     {
         lesY[0] = valAbsolu(lesY[0]-(HAUTEUR_PLATEAU+1));
-    } 
-    // dessine le serpent
-    dessinerSerpent(lesX, lesY);
-    fflush(stdout);
+    }
     usleep(ATTENTE);
 }
 
@@ -830,7 +841,7 @@ void gestionCollisions(int lesX[], int lesY[], tPlateau plateau, bool *collision
     
 }
 
-void finDuJeu(int numeroPomme, time_t debut_t, time_t fin_t)
+void finDuJeu(int numeroPomme, time_t debut_t, time_t fin_t, int nbDeplacement)
 {
     /* @brief Fin du programme , message de fin et réactivation de l'écriture dans la console*/
     enableEcho();
@@ -839,6 +850,7 @@ void finDuJeu(int numeroPomme, time_t debut_t, time_t fin_t)
 
     printf("La partie est terminée !\n");
     printf("Votre score est de ; %d\n", numeroPomme);
+    printf("Le serpent  a fait %d déplacement\n", nbDeplacement);
     printf("Le temps total CPU à été de %f secondes\n", total);
 }
 

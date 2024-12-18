@@ -56,7 +56,7 @@ void afficher(int, int, char);
 void effacer(int x, int y);
 void dessinerSerpent(int lesX[], int lesY[]);
 void calculDistance(int positionX, int lesX[], int positionY, int lesY[], int *movX, int *movY);
-void definirDirection(char *direction, char *lastDirection, int movX, int movY, int lesX[], int lesY[]);
+void definirDirection(char *direction, char *lastDirection, int movX, int movY,int ordreDeplacement, int lesX[], int lesY[]);
 int valAbsolu(int valeur);
 void vaVersPortail(int portail, int lesX[], int lesY[], int *distancePortailX, int *distancePortailY);
 void choixPortail(int lesX[], int lesY[], int xPomme, int yPomme, int *portail, int *distancePommeX, int *distancePommeY, int *distancePortailX, int *distancePortailY);
@@ -100,6 +100,9 @@ int main()
     int distancePortailX, distancePortailY;
     // nombre de mouvement dans une même direction
     int nbMovement;
+    // nombre qui permet de l'odre de déplacement du serpent en X puit en Y ou invercement
+    int ordreDeplacement = 0;
+
 
     // initialisation de la position du serpent : positionnement de la
     // tête en (X_INITIAL, Y_INITIAL), puis des anneaux à sa gauche
@@ -130,65 +133,33 @@ int main()
     do
     {
         choixPortail(lesX, lesY, xPomme, yPomme, &portail, &distancePommeX, &distancePommeY, &distancePortailX, &distancePortailY);
-        if (portail > 0)
+        if(portail == 0)
         {
-            printf("toto");
-            // traite le déplacement vers le portail en X
-            if (distancePortailX != 0)
+            if(lastDirection == DROITE || lastDirection == GAUCHE)
             {
-                definirDirection(&direction, &lastDirection, distancePortailX, distancePortailY, lesX, lesY);
-                nbMovement = valAbsolu(distancePortailX);
-                deplacement += nbMovement;
-                for (int i = 0; i < nbMovement && touche != STOP && !collision && !pommeMangee; i++)
-                {
-                    progresser(lesX, lesY, direction);
-                    gestionCollisions(lesX, lesY, lePlateau, &collision, &pommeMangee);
-                    if (!gagne)
-                    {
-                        if (!collision)
-                        {
-                            usleep(ATTENTE);
-                            if (kbhit() == 1)
-                            {
-                                touche = getchar();
-                            }
-                        }
-                    }
-                }
-                distancePortailX = 0;
+                ordreDeplacement = 3;
             }
-            // traite le déplacement vers le portail en Y
-            if (distancePortailY != 0)
+            else
             {
-                definirDirection(&direction, &lastDirection, distancePortailX, distancePortailY, lesX, lesY);
-
-                nbMovement = valAbsolu(distancePortailY);
-                deplacement += nbMovement;
-                for (int i = 0; i < nbMovement && touche != STOP && !collision && !pommeMangee; i++)
-                {
-                    progresser(lesX, lesY, direction);
-                    gestionCollisions(lesX, lesY, lePlateau, &collision, &pommeMangee);
-                    if (!gagne)
-                    {
-                        if (!collision)
-                        {
-                            usleep(ATTENTE);
-                            if (kbhit() == 1)
-                            {
-                                touche = getchar();
-                            }
-                        }
-                    }
-                }
-                distancePortailY = 0;
+                ordreDeplacement = 2;
             }
         }
-        // traite le déplacement vers la pomme en X
-        if (distancePommeX != 0)
+        else
         {
-          	definirDirection(&direction, &lastDirection, distancePommeX, distancePommeY, lesX, lesY);
-            printf("X : %d direction : %c", distancePommeX, direction);
-            nbMovement = valAbsolu(distancePommeX);
+            if(portail == P_HAUT || portail == P_BAS)
+            {
+                ordreDeplacement = 0;
+            }
+            else
+            {
+                ordreDeplacement = 1;
+            }
+        }
+        // traite le déplacement vers le portail en X
+        if (distancePortailX != 0 && ordreDeplacement == 0)
+        {
+            definirDirection(&direction, &lastDirection, distancePortailX, distancePortailY, ordreDeplacement, lesX, lesY);
+            nbMovement = valAbsolu(distancePortailX);
             deplacement += nbMovement;
             for (int i = 0; i < nbMovement && touche != STOP && !collision && !pommeMangee; i++)
             {
@@ -206,18 +177,68 @@ int main()
                     }
                 }
             }
+            distancePortailX = 0;
+        }
+        // traite le déplacement vers le portail en Y
+        else if (distancePortailY != 0 && ordreDeplacement == 1)
+        {
+            definirDirection(&direction, &lastDirection, distancePortailX, distancePortailY, ordreDeplacement, lesX, lesY);
+            nbMovement = valAbsolu(distancePortailY);
+            deplacement += nbMovement;
+            for (int i = 0; i < nbMovement && touche != STOP && !collision && !pommeMangee; i++)
+            {
+                progresser(lesX, lesY, direction);
+                usleep(ATTENTE);
+                gestionCollisions(lesX, lesY, lePlateau, &collision, &pommeMangee);
+                if (!gagne)
+                {
+                    if (!collision)
+                    {
+                        usleep(ATTENTE);
+                        if (kbhit() == 1)
+                        {
+                            touche = getchar();
+                        }
+                    }
+                }
+            }
+            distancePortailY = 0;
+        }
+        // traite le déplacement vers la pomme en X
+        else if (distancePommeX != 0 && ordreDeplacement == 2)
+        {
+            definirDirection(&direction, &lastDirection, distancePommeX, distancePommeY, ordreDeplacement, lesX, lesY);
+            nbMovement = valAbsolu(distancePommeX);
+            deplacement += nbMovement;
+            for (int i = 0; i < nbMovement && touche != STOP && !collision && !pommeMangee; i++)
+            {
+                progresser(lesX, lesY, direction);  
+                usleep(ATTENTE);            
+                gestionCollisions(lesX, lesY, lePlateau, &collision, &pommeMangee);
+                if (!gagne)
+                {
+                    if (!collision)
+                    {
+                        usleep(ATTENTE);
+                        if (kbhit() == 1)
+                        {
+                            touche = getchar();
+                        }
+                    }
+                }
+            }
             distancePommeX = 0;
         }
         // traite le déplacement vers la pomme en Y
-        if (distancePommeY != 0)
+        else if (distancePommeY != 0 && ordreDeplacement == 3)
         {
-            definirDirection(&direction, &lastDirection, distancePommeX, distancePommeY, lesX, lesY);
-            printf("Y : %d direction : %c", distancePommeY, direction);
+            definirDirection(&direction, &lastDirection, distancePommeX, distancePommeY, ordreDeplacement, lesX, lesY);
             nbMovement = valAbsolu(distancePommeY);
             deplacement += nbMovement;
             for (int i = 0; i < nbMovement && touche != STOP && !collision&& !pommeMangee; i++)
             {
                 progresser(lesX, lesY, direction);
+                usleep(ATTENTE);
                 gestionCollisions(lesX, lesY, lePlateau, &collision, &pommeMangee);
                 if (!gagne)
                 {
@@ -242,7 +263,7 @@ int main()
                 ajouterPomme(lePlateau, &xPomme, &yPomme, nbPommes);
                 pommeMangee = false;
             }
-        }
+        }   
     } while (touche != STOP && !collision && !gagne);
     fin_t = clock();
     enableEcho();
@@ -434,62 +455,59 @@ void demiTour(int lesX[], int lesY[], char directionDT)
         }
     }
 }
-void definirDirection(char *direction, char *lastDirection, int movX, int movY, int lesX[], int lesY[])
+void definirDirection(char *direction, char *lastDirection, int movX, int movY,int ordreDeplacement, int lesX[], int lesY[])
 {
-    // @brief Définit la direction du serpent
-    // @param direction : la direction actuelle du serpent
-    // @param movX : le mouvement en x
-    // @param movY : le mouvement en y
-    // @return la direction du serpent
-
-    if (movX == 0)
-
+    if(ordreDeplacement == 0 || ordreDeplacement == 2)
     {
-        if (movY > 0)
-            if (*lastDirection == HAUT)
+        if(*lastDirection == DROITE)
+        {
+            if(movX < 0)
             {
-                demiTour(lesX, lesY, *direction);
-                *direction = BAS;
+                demiTour(lesX, lesY, GAUCHE);
+                *direction = GAUCHE;
             }
             else
             {
-                *direction = BAS;
+                *direction = DROITE;
             }
+        }
         else
         {
-            if (*lastDirection == BAS)
+            if(movX > 0)
             {
-                demiTour(lesX, lesY, *direction);
-                *direction = HAUT;
+                demiTour(lesX, lesY, DROITE);
+                *direction = DROITE;
             }
             else
             {
-                *direction = HAUT;
+                *direction = GAUCHE;
             }
         }
     }
     else
     {
-        if (movX < 0)
-            if (*lastDirection == DROITE)
+        if(*lastDirection == BAS)
+        {
+            if(movY < 0)
             {
-                demiTour(lesX, lesY, *direction);
-                *direction = GAUCHE;
+                demiTour(lesX, lesY, HAUT);
+                *direction = HAUT;
             }
             else
             {
-                *direction = GAUCHE;
+                *direction = BAS;
             }
+        }
         else
         {
-            if (*lastDirection == GAUCHE)
+            if(movY > 0)
             {
-                demiTour(lesX, lesY, *direction);
-                *direction = DROITE;
+                demiTour(lesX, lesY, BAS);
+                *direction = BAS;
             }
             else
             {
-                *direction = DROITE;
+                *direction = HAUT;
             }
         }
     }
@@ -755,12 +773,14 @@ void progresser(int lesX[], int lesY[], char direction)
     // élémentds du serpent avant de le  redessiner et détecte une
     // collision avec une pomme ou avec une bordure
     effacer(lesX[TAILLE - 1], lesY[TAILLE - 1]);
-
+    
+    //fait anvencer chaque élément de la queue
     for (int i = TAILLE - 1; i > 0; i--)
     {
         lesX[i] = lesX[i - 1];
         lesY[i] = lesY[i - 1];
     }
+
     // faire progresser la tete dans la nouvelle direction en prenant en conte les portail
     switch (direction)
     {
@@ -778,6 +798,7 @@ void progresser(int lesX[], int lesY[], char direction)
         break;
     }
     // dessine le serpent
+    printf("X : %d Y : %d", lesX[0], lesY[0]);
     dessinerSerpent(lesX, lesY);
 }
 void gestionCollisions(int lesX[], int lesY[], tPlateau plateau, bool *collision, bool *pomme)
@@ -799,9 +820,12 @@ void gestionCollisions(int lesX[], int lesY[], tPlateau plateau, bool *collision
         for (int i = 1; i < TAILLE; i++)
         {
             if (lesX[0] == lesX[i] && lesY[0] == lesY[i])
+            {
                 *collision = true;
+            }
         }
     }
+    
 }
 
 void finDuJeu(int numeroPomme, time_t debut_t, time_t fin_t)

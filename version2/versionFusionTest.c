@@ -209,11 +209,11 @@ int main()
         {
             definirDirection(&direction, &lastDirection, distancePommeX, distancePommeY, ordreDeplacement, lesX, lesY);
             nbMovement = valAbsolu(distancePommeX);
+            printf("%d", nbMovement);
             deplacement += nbMovement;
             for (int i = 0; i < nbMovement && touche != STOP && !collision && !pommeMangee; i++)
             {
-                progresser(lesX, lesY, direction);  
-                usleep(ATTENTE);            
+                progresser(lesX, lesY, direction);
                 gestionCollisions(lesX, lesY, lePlateau, &collision, &pommeMangee);
                 if (!gagne)
                 {
@@ -238,7 +238,6 @@ int main()
             for (int i = 0; i < nbMovement && touche != STOP && !collision&& !pommeMangee; i++)
             {
                 progresser(lesX, lesY, direction);
-                usleep(ATTENTE);
                 gestionCollisions(lesX, lesY, lePlateau, &collision, &pommeMangee);
                 if (!gagne)
                 {
@@ -774,33 +773,36 @@ void progresser(int lesX[], int lesY[], char direction)
     // collision avec une pomme ou avec une bordure
     effacer(lesX[TAILLE - 1], lesY[TAILLE - 1]);
     
-    //fait anvencer chaque élément de la queue
+    //fait anvencer chaque élément de la queue 
     for (int i = TAILLE - 1; i > 0; i--)
     {
         lesX[i] = lesX[i - 1];
         lesY[i] = lesY[i - 1];
+        usleep(ATTENTE);
+        printf("X : %d  Y : %d \n", lesX[0], lesY[0]);
+        usleep(ATTENTE);
     }
 
     // faire progresser la tete dans la nouvelle direction en prenant en conte les portail
     switch (direction)
     {
     case HAUT:
-        lesY[0] = (lesY[0] - 1) % HAUTEUR_PLATEAU;
+        lesY[0] = (lesY[0] - 1);
         break;
     case BAS:
-        lesY[0] = (lesY[0] + 1) % HAUTEUR_PLATEAU;
+        lesY[0] = (lesY[0] + 1);
         break;
     case DROITE:
-        lesX[0] = (lesX[0] + 1) % LARGEUR_PLATEAU;
+        lesX[0] = (lesX[0] + 2);
         break;
     case GAUCHE:
-        lesX[0] = (lesX[0] - 1) % LARGEUR_PLATEAU;
+        lesX[0] = (lesX[0] - 1);
         break;
     }
     // dessine le serpent
-    printf("X : %d Y : %d", lesX[0], lesY[0]);
     dessinerSerpent(lesX, lesY);
 }
+
 void gestionCollisions(int lesX[], int lesY[], tPlateau plateau, bool *collision, bool *pomme)
 {
     // détection d'une "collision" avec une pomme

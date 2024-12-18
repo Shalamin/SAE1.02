@@ -129,15 +129,14 @@ int main()
     debut_t = clock();
     do
     {
-
         choixPortail(lesX, lesY, xPomme, yPomme, &portail, &distancePommeX, &distancePommeY, &distancePortailX, &distancePortailY);
         if (portail > 0)
         {
-      		definirDirection(&direction, &lastDirection, distancePortailX, distancePortailY, lesX, lesY);
-
-            // traite le déplacement vers le portail
+            printf("toto");
+            // traite le déplacement vers le portail en X
             if (distancePortailX != 0)
             {
+                definirDirection(&direction, &lastDirection, distancePortailX, distancePortailY, lesX, lesY);
                 nbMovement = valAbsolu(distancePortailX);
                 deplacement += nbMovement;
                 for (int i = 0; i < nbMovement && touche != STOP && !collision && !pommeMangee; i++)
@@ -156,7 +155,9 @@ int main()
                         }
                     }
                 }
+                distancePortailX = 0;
             }
+            // traite le déplacement vers le portail en Y
             if (distancePortailY != 0)
             {
                 definirDirection(&direction, &lastDirection, distancePortailX, distancePortailY, lesX, lesY);
@@ -179,12 +180,14 @@ int main()
                         }
                     }
                 }
+                distancePortailY = 0;
             }
         }
-        // traite le déplacement vers la pomme
+        // traite le déplacement vers la pomme en X
         if (distancePommeX != 0)
         {
           	definirDirection(&direction, &lastDirection, distancePommeX, distancePommeY, lesX, lesY);
+            printf("X : %d direction : %c", distancePommeX, direction);
             nbMovement = valAbsolu(distancePommeX);
             deplacement += nbMovement;
             for (int i = 0; i < nbMovement && touche != STOP && !collision && !pommeMangee; i++)
@@ -203,11 +206,13 @@ int main()
                     }
                 }
             }
+            distancePommeX = 0;
         }
+        // traite le déplacement vers la pomme en Y
         if (distancePommeY != 0)
         {
-            printf("%d", distancePommeY);
             definirDirection(&direction, &lastDirection, distancePommeX, distancePommeY, lesX, lesY);
+            printf("Y : %d direction : %c", distancePommeY, direction);
             nbMovement = valAbsolu(distancePommeY);
             deplacement += nbMovement;
             for (int i = 0; i < nbMovement && touche != STOP && !collision&& !pommeMangee; i++)
@@ -226,6 +231,7 @@ int main()
                     }
                 }
             }
+            distancePommeY = 0;
         }
         if (pommeMangee)
         {

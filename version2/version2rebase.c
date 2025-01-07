@@ -46,7 +46,7 @@
 #define P_GAUCHE_X 1
 #define P_GAUCHE_Y HAUTEUR_PLATEAU / 2
 // définition des coodonnées du portail de droite
-#define P_DROITE_X LARGEUR_PLATEAU
+#define P_DROITE_X LARGEUR_PLATEAU - 1
 #define P_DROITE_Y HAUTEUR_PLATEAU / 2
 // définition des coordonnées du portail du bas
 #define P_BAS_X LARGEUR_PLATEAU / 2
@@ -68,6 +68,7 @@ void afficher(int, int, char);
 void effacer(int x, int y);
 void dessinerSerpent(int lesX[], int lesY[]);
 void choixPortail(int xPomme, int yPomme, int lesX[], int lesY[], bool *portail, int *lePortail);
+void vaPortail(int lesX[], int lesY[], int xPortail, int yPortail, int movX, int movY, char *direction, char *lastDirection);
 void definirDirection(char *direction, char *lastDirection, int *movX, int *movY, int lesX[], int lesY[]);
 void calculMouvement(int xPomme, int lesX[], int yPomme, int lesY[], int *movX, int *movY);
 int valAbsolu(int valeur);
@@ -141,45 +142,30 @@ int main()
     do
     {
         choixPortail(xPomme, yPomme, lesX, lesY, &portail, &portailChoisi);
-        printf("portail : %d\n", portailChoisi);
+        gotoxy(1, HAUTEUR_PLATEAU + 6);
+        printf("portail : %d", portailChoisi);
         if (portail == true)
         {
+            int deplacementX = 0;
+            int deplacementY = 0;
             printf("la");
             switch (portailChoisi)
             {
             case P_HAUT:
-                calculMouvement(P_HAUT_X, lesX, P_HAUT_Y, lesY, &movX, &movY);
-                for (int i = 0; i < 2; i++)
-                    definirDirection(&direction, &lastDirection, &movX, &movY, lesX, lesY);
-                movX = abs(movX);
-                movY = abs(movY);
-                do
-                {
-                    progresser(lesX, lesY, direction, &movX, &movY);
-                    gestionCollisions(lesX, lesY, lePlateau, &collision, &pommeMangee);
-                    deplacement++;
-                    if (!gagne)
-                    {
-                        if (!collision)
-                        {
-                            if (kbhit() == 1)
-                            {
-                                touche = getchar();
-                            }
-                        }
-                    }
-                } while (movX != 0 && movY != 0 && !collision && !gagne && touche != STOP);
-
+                vaPortail(lesX, lesY, P_HAUT_X, P_HAUT_Y, movX, movY,
+                          &direction, &lastDirection);
                 calculMouvement(xPomme, lesX, yPomme, lesY, &movX, &movY);
-                for (int i = 0; i < 2; i++)
-                    definirDirection(&direction, &lastDirection, &movX, &movY, lesX, lesY);
+                definirDirection(&direction, &lastDirection, &movX, &movY, lesX, lesY);
                 movX = abs(movX);
                 movY = abs(movY);
+
                 do
                 {
+                    (direction == DROITE || direction == GAUCHE)
+                        ? deplacementX++
+                        : deplacementY++;
                     progresser(lesX, lesY, direction, &movX, &movY);
                     gestionCollisions(lesX, lesY, lePlateau, &collision, &pommeMangee);
-                    deplacement++;
                     if (!gagne)
                     {
                         if (!collision)
@@ -190,192 +176,118 @@ int main()
                             }
                         }
                     }
-                } while (movX != 0 && movY != 0 && !collision && !gagne && touche != STOP && !pommeMangee);
-
+                } while (movX != deplacementX && movY != deplacementY && !collision && !gagne && touche != STOP && !pommeMangee);
                 break;
             case P_GAUCHE:
-                calculMouvement(P_GAUCHE_X, lesX, P_GAUCHE_Y, lesY, &movX, &movY);
-                for (int i = 0; i < 2; i++)
-                {
-
-                    definirDirection(&direction, &lastDirection, &movX, &movY, lesX, lesY);
-                    movX = abs(movX);
-                    movY = abs(movY);
-                    do
-                    {
-                        progresser(lesX, lesY, direction, &movX, &movY);
-                        gestionCollisions(lesX, lesY, lePlateau, &collision, &pommeMangee);
-                        deplacement++;
-                        if (!gagne)
-                        {
-                            if (!collision)
-                            {
-                                if (kbhit() == 1)
-                                {
-                                    touche = getchar();
-                                }
-                            }
-                        }
-                    } while (movX != 0 && movY != 0 && !collision && !gagne && touche != STOP);
-                }
+                vaPortail(lesX, lesY, P_GAUCHE_X, P_GAUCHE_Y, movX, movY, &direction, &lastDirection);
                 calculMouvement(xPomme, lesX, yPomme, lesY, &movX, &movY);
-                for (int i = 0; i < 2; i++)
+                definirDirection(&direction, &lastDirection, &movX, &movY, lesX, lesY);
+                movX = abs(movX);
+                movY = abs(movY);
+                do
                 {
-                    definirDirection(&direction, &lastDirection, &movX, &movY, lesX, lesY);
-                    movX = abs(movX);
-                    movY = abs(movY);
-                    do
+                    (direction == DROITE || direction == GAUCHE)
+                        ? deplacementX++
+                        : deplacementY++;
+                    progresser(lesX, lesY, direction, &movX, &movY);
+                    gestionCollisions(lesX, lesY, lePlateau, &collision, &pommeMangee);
+                    if (!gagne)
                     {
-                        progresser(lesX, lesY, direction, &movX, &movY);
-                        gestionCollisions(lesX, lesY, lePlateau, &collision, &pommeMangee);
-                        deplacement++;
-                        if (!gagne)
+                        if (!collision)
                         {
-                            if (!collision)
+                            if (kbhit() == 1)
                             {
-                                if (kbhit() == 1)
-                                {
-                                    touche = getchar();
-                                }
-                            }
-                        }
-                    } while (movX != 0 && movY != 0 && !collision && !gagne && touche != STOP && !pommeMangee);
-                }
-                break;
-            case P_DROITE:
-                calculMouvement(P_DROITE_X, lesX, P_DROITE_Y, lesY, &movX, &movY);
-                for (int i = 0; i < 2; i++)
-                {
-
-                    definirDirection(&direction, &lastDirection, &movX, &movY, lesX, lesY);
-                    movX = abs(movX);
-                    movY = abs(movY);
-                    do
-                    {
-                        progresser(lesX, lesY, direction, &movX, &movY);
-                        gestionCollisions(lesX, lesY, lePlateau, &collision, &pommeMangee);
-                        deplacement++;
-                        if (!gagne)
-                        {
-                            if (!collision)
-                            {
-                                if (kbhit() == 1)
-                                {
-                                    touche = getchar();
-                                }
-                            }
-                        }
-                    } while (movX != 0 && movY != 0 && !collision && !gagne && touche != STOP);
-                }
-                calculMouvement(xPomme, lesX, yPomme, lesY, &movX, &movY);
-                for (int i = 0; i < 2; i++)
-                {
-
-                    definirDirection(&direction, &lastDirection, &movX, &movY, lesX, lesY);
-                    movX = abs(movX);
-                    movY = abs(movY);
-                    do
-                    {
-                        progresser(lesX, lesY, direction, &movX, &movY);
-                        gestionCollisions(lesX, lesY, lePlateau, &collision, &pommeMangee);
-                        deplacement++;
-                        if (!gagne)
-                        {
-                            if (!collision)
-                            {
-                                if (kbhit() == 1)
-                                {
-                                    touche = getchar();
-                                }
-                            }
-                        }
-                    } while (movX != 0 && movY != 0 && !collision && !gagne && touche != STOP && !pommeMangee);
-                }
-                break;
-            case P_BAS:
-                calculMouvement(P_BAS_X, lesX, P_BAS_Y, lesY, &movX, &movY);
-                for (int i = 0; i < 2; i++)
-                {
-
-                    definirDirection(&direction, &lastDirection, &movX, &movY, lesX, lesY);
-                    movX = abs(movX);
-                    movY = abs(movY);
-                    do
-                    {
-                        progresser(lesX, lesY, direction, &movX, &movY);
-                        gestionCollisions(lesX, lesY, lePlateau, &collision, &pommeMangee);
-                        deplacement++;
-                        if (!gagne)
-                        {
-                            if (!collision)
-                            {
-                                if (kbhit() == 1)
-                                {
-                                    touche = getchar();
-                                }
-                            }
-                        }
-                    } while (movX != 0 && movY != 0 && !collision && !gagne && touche != STOP && !pommeMangee);
-                }
-                calculMouvement(xPomme, lesX, yPomme, lesY, &movX, &movY);
-                for (int i = 0; i < 2; i++)
-                {
-                    definirDirection(&direction, &lastDirection, &movX, &movY, lesX, lesY);
-                    movX = abs(movX);
-                    movY = abs(movY);
-                    do
-                    {
-                        progresser(lesX, lesY, direction, &movX, &movY);
-                        gestionCollisions(lesX, lesY, lePlateau, &collision, &pommeMangee);
-                        deplacement++;
-                        if (!gagne)
-                        {
-                            if (!collision)
-                            {
-                                if (kbhit() == 1)
-                                {
-                                    touche = getchar();
-                                }
+                                touche = getchar();
                             }
                         }
                     }
+                } while (movX != deplacementX && movY != deplacementY && !collision && !gagne && touche != STOP && !pommeMangee);
+                break;
+            case P_DROITE:
 
-                    while (movX != 0 && movY != 0 && !collision && !gagne && touche != STOP && !pommeMangee);
-                }
+                vaPortail(lesX, lesY, P_DROITE_X, P_DROITE_Y, movX, movY, &direction, &lastDirection);
+                calculMouvement(xPomme, lesX, yPomme, lesY, &movX, &movY);
+                definirDirection(&direction, &lastDirection, &movX, &movY, lesX, lesY);
+                movX = abs(movX);
+                movY = abs(movY);
+                do
+                {
+                    (direction == DROITE || direction == GAUCHE)
+                        ? deplacementX++
+                        : deplacementY++;
+                    progresser(lesX, lesY, direction, &movX, &movY);
+                    gestionCollisions(lesX, lesY, lePlateau, &collision, &pommeMangee);
+                    if (!gagne)
+                    {
+                        if (!collision)
+                        {
+                            if (kbhit() == 1)
+                            {
+                                touche = getchar();
+                            }
+                        }
+                    }
+                } while (movX != deplacementX && movY != deplacementY && !collision && !gagne && touche != STOP && !pommeMangee);
+                break;
+
+            case P_BAS:
+
+                vaPortail(lesX, lesY, P_BAS_X, P_BAS_Y, movX, movY, &direction, &lastDirection);
+                calculMouvement(xPomme, lesX, yPomme, lesY, &movX, &movY);
+                definirDirection(&direction, &lastDirection, &movX, &movY, lesX, lesY);
+                movX = abs(movX);
+                movY = abs(movY);
+                do
+                {
+                    (direction == DROITE || direction == GAUCHE)
+                        ? deplacementX++
+                        : deplacementY++;
+                    progresser(lesX, lesY, direction, &movX, &movY);
+                    gestionCollisions(lesX, lesY, lePlateau, &collision, &pommeMangee);
+                    if (!gagne)
+                    {
+                        if (!collision)
+                        {
+                            if (kbhit() == 1)
+                            {
+                                touche = getchar();
+                            }
+                        }
+                    }
+                } while (movX != deplacementX && movY != deplacementY && !collision && !gagne && touche != STOP && !pommeMangee);
                 break;
             }
         }
         else
         {
-            printf("ici");
+            // printf("ici");
             calculMouvement(xPomme, lesX, yPomme, lesY, &movX, &movY);
-            for (int i = 0; i < 2; i++)
+            definirDirection(&direction, &lastDirection, &movX, &movY, lesX, lesY);
+            movX = valAbsolu(movX);
+            movY = valAbsolu(movY);
+            int deplacementX = 0;
+            int deplacementY = 0;
+
+            do
             {
-                definirDirection(&direction, &lastDirection, &movX, &movY, lesX, lesY);
-                movX = abs(movX);
-                movY = abs(movY);
-                gotoxy(1, HAUTEUR_PLATEAU + 2);
-                printf("direction : %c\n", direction);
-                printf("movX : %d\n", movX);
-                printf("movY : %d\n", movY);
-                do
+
+                (direction == DROITE || direction == GAUCHE)
+                    ? deplacementX++
+                    : deplacementY++;
+
+                progresser(lesX, lesY, direction, &movX, &movY);
+                gestionCollisions(lesX, lesY, lePlateau, &collision, &pommeMangee);
+                if (!gagne)
                 {
-                    progresser(lesX, lesY, direction, &movX, &movY);
-                    gotoxy(1, HAUTEUR_PLATEAU + 6);
-                    printf("movX : %d\n", movX);
-                    gestionCollisions(lesX, lesY, lePlateau, &collision, &pommeMangee);
-                    if (!gagne)
+                    if (!collision)
                     {
-                        if (!collision)
+                        if (kbhit() == 1)
                         {
-                            if (kbhit() == 1)
-                            {
-                                touche = getchar();
-                            }
+                            touche = getchar();
                         }
                     }
-                } while (movX != 0 && movY != 0 && !collision && !gagne && touche != STOP && !pommeMangee);
-            }
+                }
+            } while (movX != deplacementX && movY != deplacementY && !collision && !gagne && touche != STOP && !pommeMangee);
         }
 
         if (pommeMangee)
@@ -440,87 +352,119 @@ void ajouterPomme(tPlateau plateau, int *xPomme, int *yPomme, int numeroPomme)
 }
 void choixPortail(int xPomme, int yPomme, int lesX[], int lesY[], bool *portail, int *lePortail)
 {
+    int choix1 = 0;
+    int choix2 = 0;
+    int choix3 = 0;
+    int choix4 = 0;
     // @brief Définit la direction du serpent
     if (lesX[0] < LARGEUR_PLATEAU / 2 && lesY[0] < HAUTEUR_PLATEAU / 2)
     // le serpent se situe dans le bord haut gauche du plateau
     {
         // On vérifie quelle est la direction la plus courte pour atteindre la pomme
-        if (((xPomme - lesX[0]) + (yPomme - lesY[0])) >
-            ((P_HAUT_X - lesX[0]) + (P_HAUT_Y - lesY[0])) +
-                ((xPomme - P_BAS_X) + (yPomme - P_BAS_Y)))
+        if ((abs(xPomme - lesX[0]) + abs(yPomme - lesY[0])) >
+            (abs(P_HAUT_X - lesX[0]) + abs(P_HAUT_Y - lesY[0])) +
+                (abs(xPomme - P_BAS_X) + abs(yPomme - P_BAS_Y)))
         {
             *portail = true;
-            *lePortail = P_HAUT;
+            choix1 = (abs(P_HAUT_X - lesX[0]) + abs(P_HAUT_Y - lesY[0])) +
+                     (abs(xPomme - P_BAS_X) + abs(yPomme - P_BAS_Y));
         }
-        else if (((xPomme - lesX[0]) + (yPomme - lesY[0])) >
-                 ((P_GAUCHE_X - lesX[0]) + (P_GAUCHE_Y - lesY[0])) +
-                     ((xPomme - P_DROITE_X) + (yPomme - P_DROITE_Y)))
+        else if ((abs(xPomme - lesX[0]) + abs(yPomme - lesY[0])) >
+                 (abs(P_GAUCHE_X - lesX[0]) + abs(P_GAUCHE_Y - lesY[0])) +
+                     (abs(xPomme - P_DROITE_X) + abs(yPomme - P_DROITE_Y)))
         {
             *portail = true;
-            *lePortail = P_GAUCHE;
+            choix2 = (abs(P_GAUCHE_X - lesX[0]) + abs(P_GAUCHE_Y - lesY[0])) +
+                     (abs(xPomme - P_DROITE_X) + abs(yPomme - P_DROITE_Y));
         }
         else
         {
             *portail = false;
+        }
+        if (*portail)
+        {
+            if (choix1 > choix2)
+                *lePortail = P_HAUT;
+            else
+                *lePortail = P_GAUCHE;
         }
     }
     else if (lesX[0] < LARGEUR_PLATEAU / 2 && lesY[0] > HAUTEUR_PLATEAU / 2)
     {
         // le serpent se situe dans le bord bas gauche
-        if (((xPomme - lesX[0]) + (yPomme - lesY[0])) >
-            ((P_BAS_X - lesX[0]) + (P_BAS_Y - lesY[0])) +
-                ((xPomme - P_HAUT_X) + (yPomme - P_HAUT_Y)))
+        if ((abs(xPomme - lesX[0]) + abs(yPomme - lesY[0])) >
+            (abs(P_BAS_X - lesX[0]) + abs(P_BAS_Y - lesY[0])) +
+                (abs(xPomme - P_HAUT_X) + (yPomme - P_HAUT_Y)))
         {
             *portail = true;
-            *lePortail = P_BAS;
+            choix1 = (abs(P_BAS_X - lesX[0]) + abs(P_BAS_Y - lesY[0])) +
+                     (abs(xPomme - P_HAUT_X) + (yPomme - P_HAUT_Y));
         }
-        else if (((xPomme - lesX[0]) + (yPomme - lesY[0])) >
-                 ((P_GAUCHE_X - lesX[0]) + (P_GAUCHE_Y - lesY[0])) +
-                     ((xPomme - P_DROITE_X) + (yPomme - P_DROITE_Y)))
+        else if ((abs(xPomme - lesX[0]) + abs(yPomme - lesY[0])) >
+                 (abs(P_GAUCHE_X - lesX[0]) + abs(P_GAUCHE_Y - lesY[0])) +
+                     (abs(xPomme - P_DROITE_X) + abs(yPomme - P_DROITE_Y)))
         {
             *portail = true;
-            *lePortail = P_GAUCHE;
+            choix2 = (abs(P_GAUCHE_X - lesX[0]) + abs(P_GAUCHE_Y - lesY[0])) +
+                     (abs(xPomme - P_DROITE_X) + abs(yPomme - P_DROITE_Y));
         }
         else
         {
             *portail = false;
+        }
+        if (*portail)
+        {
+            if (choix1 > choix2)
+                *lePortail = P_BAS;
+            else
+                *lePortail = P_GAUCHE;
         }
     }
     else if (lesX[0] > LARGEUR_PLATEAU / 2 && lesY[0] < HAUTEUR_PLATEAU / 2)
     {
         // le serpent se situe dans le bord haut droit
-        if (((xPomme - lesX[0]) + (yPomme - lesY[0])) >
-            ((P_HAUT_X - lesX[0]) + (P_HAUT_Y - lesY[0])) +
-                ((xPomme - P_BAS_X) + (yPomme - P_BAS_Y)))
+        if ((abs(xPomme - lesX[0]) + abs(yPomme - lesY[0])) >
+            (abs(P_HAUT_X - lesX[0]) + abs(P_HAUT_Y - lesY[0])) +
+                (abs(xPomme - P_BAS_X) + abs(yPomme - P_BAS_Y)))
         {
             *portail = true;
-            *lePortail = P_HAUT;
+            choix1 = (abs(P_HAUT_X - lesX[0]) + abs(P_HAUT_Y - lesY[0])) +
+                     (abs(xPomme - P_BAS_X) + abs(yPomme - P_BAS_Y));
         }
-        else if (((xPomme - lesX[0]) + (yPomme - lesY[0])) >
-                 ((P_DROITE_X - lesX[0]) + (P_DROITE_Y - lesY[0])) +
-                     ((xPomme - P_GAUCHE_X) + (yPomme - P_GAUCHE_Y)))
+        else if ((abs(xPomme - lesX[0]) + abs(yPomme - lesY[0])) >
+                 (abs(P_DROITE_X - lesX[0]) + abs(P_DROITE_Y - lesY[0])) +
+                     (abs(xPomme - P_GAUCHE_X) + abs(yPomme - P_GAUCHE_Y)))
         {
             *portail = true;
-            *lePortail = P_DROITE;
+            choix2 = (abs(P_DROITE_X - lesX[0]) + abs(P_DROITE_Y - lesY[0])) +
+                     (abs(xPomme - P_GAUCHE_X) + abs(yPomme - P_GAUCHE_Y));
         }
         else
         {
             *portail = false;
         }
+        if (*portail)
+        {
+            if (choix1 > choix2)
+                *lePortail = P_HAUT;
+            else
+                *lePortail = P_DROITE;
+        }
     }
-    else
+    else if (lesX[0] > LARGEUR_PLATEAU / 2 && lesY[0] > HAUTEUR_PLATEAU / 2)
     {
         // le serpent se situe dans le bord bas droit
-        if (((xPomme - lesX[0]) + (yPomme - lesY[0])) >
-            ((P_BAS_X - lesX[0]) + (P_BAS_Y - lesY[0])) +
-                ((xPomme - P_HAUT_X) + (yPomme - P_HAUT_Y)))
+        if ((abs(xPomme - lesX[0]) + abs(yPomme - lesY[0])) >
+            (abs(P_BAS_X - lesX[0]) + abs(P_BAS_Y - lesY[0])) +
+                (abs(xPomme - P_HAUT_X) + (yPomme - P_HAUT_Y)))
         {
             *portail = true;
-            *lePortail = P_BAS;
+            choix1 = (abs(P_BAS_X - lesX[0]) + abs(P_BAS_Y - lesY[0])) +
+                     (abs(xPomme - P_HAUT_X) + (yPomme - P_HAUT_Y));
         }
-        else if (((xPomme - lesX[0]) + (yPomme - lesY[0])) >
-                 ((P_DROITE_X - lesX[0]) + (P_DROITE_Y - lesY[0])) +
-                     ((xPomme - P_GAUCHE_X) + (yPomme - P_GAUCHE_Y)))
+        else if ((abs(xPomme - lesX[0]) + abs(yPomme - lesY[0])) >
+                 (abs(P_DROITE_X - lesX[0]) + abs(P_DROITE_Y - lesY[0])) +
+                     (abs(xPomme - P_GAUCHE_X) + abs(yPomme - P_GAUCHE_Y)))
         {
             *portail = true;
             *lePortail = P_DROITE;
@@ -529,7 +473,87 @@ void choixPortail(int xPomme, int yPomme, int lesX[], int lesY[], bool *portail,
         {
             *portail = false;
         }
+        if (*portail)
+        {
+            if (choix1 > choix2)
+                *lePortail = P_BAS;
+            else
+                *lePortail = P_GAUCHE;
+        }
     }
+    else if (lesX[0] == LARGEUR_PLATEAU / 2 && lesY[0] == HAUTEUR_PLATEAU / 2)
+    {
+        // quand le serpent est au centre du plateau
+        if ((abs(xPomme - lesX[0]) + abs(yPomme - lesY[0])) >
+            (abs(P_BAS_X - lesX[0]) + abs(P_BAS_Y - lesY[0])) +
+                (abs(xPomme - P_HAUT_X) + abs(yPomme - P_HAUT_Y)))
+        {
+            *portail = true;
+            choix1 = (abs(P_BAS_X - lesX[0]) + abs(P_BAS_Y - lesY[0])) +
+                     (abs(xPomme - P_HAUT_X) + abs(yPomme - P_HAUT_Y));
+        }
+        else if ((abs(xPomme - lesX[0]) + abs(yPomme - lesY[0])) >
+                 (abs(P_DROITE_X - lesX[0]) + abs(P_DROITE_Y - lesY[0])) +
+                     (abs(xPomme - P_GAUCHE_X) + abs(yPomme - P_GAUCHE_Y)))
+        {
+            *portail = true;
+            choix2 = (abs(P_DROITE_X - lesX[0]) + abs(P_DROITE_Y - lesY[0])) +
+                     (abs(xPomme - P_GAUCHE_X) + abs(yPomme - P_GAUCHE_Y));
+        }
+        else if ((abs(xPomme - lesX[0]) + abs(yPomme - lesY[0])) >
+                 (abs(P_HAUT_X - lesX[0]) + abs(P_HAUT_Y - lesY[0])) +
+                     (abs(xPomme - P_BAS_X) + abs(yPomme - P_BAS_Y)))
+        {
+            *portail = true;
+            choix3 = (abs(P_HAUT_X - lesX[0]) + abs(P_HAUT_Y - lesY[0])) +
+                     (abs(xPomme - P_BAS_X) + abs(yPomme - P_BAS_Y));
+        }
+        else if ((abs(xPomme - lesX[0]) + abs(yPomme - lesY[0])) >
+                 (abs(P_GAUCHE_X - lesX[0]) + abs(P_GAUCHE_Y - lesY[0])) +
+                     (abs(xPomme - P_DROITE_X) + abs(yPomme - P_DROITE_Y)))
+        {
+            *portail = true;
+            choix4 = (abs(P_GAUCHE_X - lesX[0]) + abs(P_GAUCHE_Y - lesY[0])) +
+                     (abs(xPomme - P_DROITE_X) + abs(yPomme - P_DROITE_Y));
+        }
+        else
+        {
+            *portail = false;
+        }
+        if (*portail)
+        {
+            if (choix1 > choix2 && choix1 > choix3 && choix1 > choix4)
+                *lePortail = P_BAS;
+            else if (choix2 > choix1 && choix2 > choix3 && choix2 > choix4)
+                *lePortail = P_DROITE;
+            else if (choix3 > choix1 && choix3 > choix2 && choix3 > choix4)
+                *lePortail = P_HAUT;
+            else
+                *lePortail = P_GAUCHE;
+        }
+    }
+}
+void vaPortail(int lesX[], int lesY[], int xPortail, int yPortail, int movX, int movY, char *direction, char *lastDirection)
+{
+    calculMouvement(xPortail, lesX, yPortail, lesY, &movX, &movY);
+    definirDirection(&(*direction), &(*lastDirection), &movX, &movY, lesX, lesY);
+    movX = valAbsolu(movX);
+    movY = valAbsolu(movY);
+    gotoxy(1, HAUTEUR_PLATEAU + 5);
+    printf("xPortail : %d, yPortail : %d\n", xPortail, yPortail);
+    printf("movX : %d, movY : %d\n", movX, movY);
+    int deplacementX = 0;
+    int deplacementY = 0;
+
+    do
+    {
+
+        (*direction == DROITE || *direction == GAUCHE)
+            ? deplacementX++
+            : deplacementY++;
+
+        progresser(lesX, lesY, *direction, &movX, &movY);
+    } while (movX != deplacementX && movY != deplacementY);
 }
 void afficher(int x, int y, char car)
 {
@@ -704,7 +728,7 @@ void definirDirection(char *direction, char *lastDirection, int *movX, int *movY
         {
             if (*lastDirection == GAUCHE)
             {
-                demiTour(lesX, lesY, *direction, &(*movX), &(*movY));
+                // demiTour(lesX, lesY, *direction, &(*movX), &(*movY));
                 *direction = DROITE;
             }
             else
@@ -751,24 +775,26 @@ void progresser(int lesX[], int lesY[], char direction, int *movX, int *movY)
     switch (direction)
     {
     case HAUT:
-        lesY[0] = (lesY[0] - 1) % HAUTEUR_PLATEAU;
-        *movY = *movY - 1;
+        lesY[0]--;
+        if (lesY[0] < 1)
+            lesY[0] = HAUTEUR_PLATEAU - 1;
         break;
     case BAS:
-        lesY[0] = (lesY[0] + 1) % HAUTEUR_PLATEAU;
+        lesY[0]++;
+        if (lesY[0] >= HAUTEUR_PLATEAU)
+            lesY[0] = 1;
         break;
-        *movY = *movY - 1;
+
     case DROITE:
         lesX[0]++;
-        if (lesX[0] >= LARGEUR_PLATEAU)
+        if (lesX[0] >= LARGEUR_PLATEAU + 1)
             lesX[0] = 1; // ou la valeur souhaitée pour le rebouclage
-        *movX = *movX - 1;
         break;
     case GAUCHE:
         lesX[0]--;
         if (lesX[0] < 1)
             lesX[0] = LARGEUR_PLATEAU - 1;
-        *movX = *movX - 1;
+
         break;
     }
     usleep(ATTENTE);

@@ -36,11 +36,11 @@ void progresser(int lesX[], int lesY[], char direction)
     // dessine le serpent
     dessinerSerpent(lesX, lesY);
     fflush(stdout);
-    if (((lesX[0] == 1 || lesX[0] == LARGEUR_PLATEAU) && lesY[0] == HAUTEUR_PLATEAU / 2))
+    if (((lesX[0] == 0 || lesX[0] == LARGEUR_PLATEAU + 1) && lesY[0] == HAUTEUR_PLATEAU / 2))
     {
         lesX[0] = valAbsolu(lesX[0] - (LARGEUR_PLATEAU + 1));
     }
-    else if ((lesY[0] == 1 || lesY[0] == HAUTEUR_PLATEAU) && lesX[0] == LARGEUR_PLATEAU / 2)
+    else if ((lesY[0] == 0 || lesY[0] == HAUTEUR_PLATEAU + 1) && lesX[0] == LARGEUR_PLATEAU / 2)
     {
         lesY[0] = valAbsolu(lesY[0] - (HAUTEUR_PLATEAU + 1));
     }

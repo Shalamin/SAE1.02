@@ -12,13 +12,14 @@ void dessinerSerpent(int lesX[], int lesY[])
 
 void ajouterPomme(tPlateau plateau, int *xPomme, int *yPomme, int numeroPommes)
 {
-    // génère aléatoirement la position d'une pomme,
-    // vérifie que ça correspond à une case vide
-    // du plateau puis l'ajoute au plateau et l'affiche
     *xPomme = lesPommesX[numeroPommes];
     *yPomme = lesPommesY[numeroPommes];
+
     plateau[*xPomme][*yPomme] = POMME;
     afficher(*xPomme, *yPomme, POMME);
+
+    gotoxy(0, HAUTEUR_PLATEAU + 4);
+    printf("Pomme en %d %d\n", *xPomme, *yPomme);
 }
 
 void finDuJeu(int numeroPomme, time_t debut_t, time_t fin_t, int nbDeplacement)

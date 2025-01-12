@@ -89,11 +89,40 @@ int main()
         {
             if (derniereDirection == HAUT || derniereDirection == BAS)
             {
-                ordreDeplacement = 2;
+                if (!existePaves(lesX, lesY, xPomme, yPomme, derniereDirection, lePlateau))
+                {
+                    if (distancePommeX == 0)
+                    {
+                        escivePaves(lesX, lesY, xPomme, yPomme, lePlateau);
+                    }
+                    else
+                        ordreDeplacement = 2;
+                }
+                else
+                {
+                    ordreDeplacement = 3;
+                }
             }
             else
             {
-                ordreDeplacement = 3;
+                if (!existePaves(lesX, lesY, xPomme, yPomme, derniereDirection, lePlateau))
+                {
+                    if (distancePommeY == 0)
+                    {
+                        escivePaves(lesX, lesY, xPomme, yPomme, lePlateau);
+                    }
+                    else
+                        ordreDeplacement = 3;
+                }
+                else
+                {
+                    if (distancePommeX == 0)
+                    {
+                        escivePaves(lesX, lesY, xPomme, yPomme, lePlateau);
+                    }
+                    else
+                        ordreDeplacement = 2;
+                }
             }
         }
         else
@@ -223,6 +252,7 @@ int main()
                 pommeMangee = false;
             }
         }
+
         i = 0;
     } while (touche != STOP && !collision && !gagne);
     fin_t = clock();

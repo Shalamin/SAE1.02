@@ -47,7 +47,7 @@ void initPaves(tPlateau plateau)
         {
             for (int dy = 0; dy < TAILLE_PAVES; dy++)
             {
-                plateau[dx + lesPavesX[i]][dy + lesPavesY[i]] = BORDURE;
+                plateau[dx + lesPavesX[i]][dy + lesPavesY[i]] = PAVE;
                 pavesX[i * TAILLE_PAVES + dx] = lesPavesX[i] + dx; // on traite les pavés avec I ,puis la taille d'un pavé X les coordonnées X
                 pavesY[i * TAILLE_PAVES + dy] = lesPavesY[i] + dy; // même chose mais avec Y
             }

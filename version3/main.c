@@ -49,6 +49,8 @@ int main()
     int distancePommeX, distancePommeY;
     // distance le portail a prendre
     int distancePortailX, distancePortailY;
+    // position du portail
+    int xPortail, yPortail;
     // nombre de mouvement dans une même direction
     int nbMovement;
     // nombre qui permet de l'odre de déplacement du serpent en X puit en Y ou invercement
@@ -85,40 +87,64 @@ int main()
     do
     {
         choixPortail(lesX, lesY, xPomme, yPomme, &portail, &distancePommeX, &distancePommeY, &distancePortailX, &distancePortailY);
+        if (portail == P_GAUCHE)
+        {
+            xPortail = 1;
+            yPortail = HAUTEUR_PLATEAU / 2;
+        }
+        else if (portail == P_HAUT)
+        {
+            xPortail = LARGEUR_PLATEAU / 2;
+            yPortail = 1;
+        }
+        else if (portail == P_DROITE)
+        {
+            xPortail = LARGEUR_PLATEAU;
+            yPortail = HAUTEUR_PLATEAU / 2;
+        }
+        else if (portail == P_BAS)
+        {
+            xPortail = LARGEUR_PLATEAU / 2;
+            yPortail = HAUTEUR_PLATEAU;
+        }
         if (portail == 0)
         {
             if (derniereDirection == HAUT || derniereDirection == BAS)
             {
-                if (!existePaves(lesX, lesY, xPomme, yPomme, derniereDirection, lePlateau))
+                if (!existePavesPomme(lesX, lesY, xPomme, yPomme, derniereDirection, lePlateau))
                 {
+
                     if (distancePommeX == 0)
                     {
-                        escivePaves(lesX, lesY, xPomme, yPomme, lePlateau);
+                        escivePavesPomme(lesX, lesY, xPomme, yPomme, &derniereDirection, lePlateau);
+                        ordreDeplacement = 3;
                     }
                     else
+
                         ordreDeplacement = 2;
                 }
                 else
                 {
+
                     ordreDeplacement = 3;
                 }
             }
             else
             {
-                if (!existePaves(lesX, lesY, xPomme, yPomme, derniereDirection, lePlateau))
+                if (!existePavesPomme(lesX, lesY, xPomme, yPomme, derniereDirection, lePlateau))
                 {
-                    if (distancePommeY == 0)
-                    {
-                        escivePaves(lesX, lesY, xPomme, yPomme, lePlateau);
-                    }
-                    else
-                        ordreDeplacement = 3;
+
+                    ordreDeplacement = 3;
                 }
                 else
                 {
                     if (distancePommeX == 0)
                     {
-                        escivePaves(lesX, lesY, xPomme, yPomme, lePlateau);
+                        escivePavesPomme(lesX, lesY, xPomme, yPomme, &derniereDirection, lePlateau);
+                    }
+                    else if (distancePommeY == 0)
+                    {
+                        escivePavesPomme(lesX, lesY, xPomme, yPomme, &derniereDirection, lePlateau);
                     }
                     else
                         ordreDeplacement = 2;
@@ -129,24 +155,42 @@ int main()
         {
             if (portail == P_HAUT || portail == P_BAS)
             {
-                if (distancePortailX != 0)
+                if (existePavesPortail(lesX, lesY, xPortail, yPortail, derniereDirection, lePlateau))
                 {
-                    ordreDeplacement = 0;
+
+                    escivePavesPortail(lesX, lesY, xPortail, yPortail, &derniereDirection, lePlateau);
+                    ordreDeplacement = 1;
                 }
                 else
                 {
-                    ordreDeplacement = 1;
+                    if (distancePortailX != 0)
+                    {
+                        ordreDeplacement = 0;
+                    }
+                    else
+                        ordreDeplacement = 1; // Aller dans la direction Y
                 }
             }
             else
             {
-                if (distancePortailY != 0)
+                //!\ FONCTION NON BUGGER NE PAS TOUCHER .
+                if (existePavesPortail(lesX, lesY, xPortail, yPortail, derniereDirection, lePlateau))
                 {
-                    ordreDeplacement = 1;
+
+                    escivePavesPortail(lesX, lesY, xPortail, yPortail, &derniereDirection, lePlateau);
+                    ordreDeplacement = 1; // Aller dans la direction X
                 }
                 else
                 {
-                    ordreDeplacement = 0;
+                    if (distancePortailY != 0)
+                    {
+                        ordreDeplacement = 1; // Aller dans la direction Y
+                        gotoxy(1, HAUTEUR_PLATEAU + 7);
+                        printf("   \n");
+                    }
+
+                    else
+                        ordreDeplacement = 0; // Aller dans la direction X
                 }
             }
         }

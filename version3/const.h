@@ -12,7 +12,7 @@
 // nombre de pommes à manger pour gagner
 #define NB_POMMES 10
 // temporisation entre deux déplacements du serpent (en microsecondes)
-#define ATTENTE 20000
+#define ATTENTE 100000
 // caractères pour représenter le serpent
 #define CORPS 'X'
 #define TETE 'O'
@@ -35,5 +35,6 @@
 #define NB_PAVES 6
 #define TAILLE_PAVES 5
 #define MAX_PAVES 100
+#define PAVE 'P'
 
 #endif // CONST_H

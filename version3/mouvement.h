@@ -10,6 +10,8 @@
 
 void progresser(int lesX[], int lesY[], char direction);
 void gestionCollisions(int lesX[], int lesY[], tPlateau plateau, bool *collision, bool *pomme);
-bool existePaves(int lesX[], int lesY[], int xPomme, int yPomme, char derniereDirection, tPlateau plateau);
-void escivePaves(int lesX[], int lesY[], int xPomme, int yPomme, tPlateau plateau);
+bool existePavesPomme(int lesX[], int lesY[], int xPomme, int yPomme, char derniereDirection, tPlateau plateau);
+bool existePavesPortail(int lesX[], int lesY[], int xPortail, int yPortail, char derniereDirection, tPlateau plateau);
+void escivePavesPomme(int lesX[], int lesY[], int xPomme, int yPomme, char *derniereDirection, tPlateau plateau);
+void escivePavesPortail(int lesX[], int lesY[], int xPortail, int yPortail, char *derniereDirection, tPlateau plateau);
 #endif // MOUVEMENT_H

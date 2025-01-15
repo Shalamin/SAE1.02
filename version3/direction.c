@@ -2,23 +2,30 @@
 #include <stdlib.h>
 #include "direction.h"
 
-void definirDirection(char *direction, char *derniereDirection, int *movX, int *movY, int ordreDeplacement, int lesX[], int lesY[])
+void definirDirection(char *direction, char *derniereDirection, int *movX, int *movY, int axe, int lesX[], int lesY[])
 {
-    if (ordreDeplacement == 0 || ordreDeplacement == 2) // déplacement en X
+    /*revoie la diretion dans lequel le serpent doit allez et fait un demi_tour quand il le faut*/
+
+
+    if (axe == 0) // déplacement en X
     {
+        //regarde si la dernier direction 
         if (*derniereDirection == DROITE)
         {
+            //si il doit allez a gauche fait un demi tour
             if (*movX < 0)
             {
                 demiTour(lesX, lesY, GAUCHE, &*movY);
                 *movX += (TAILLE / 2) - 1;
                 *direction = GAUCHE;
             }
+            //sinon va a droite
             else
             {
                 *direction = DROITE;
             }
         }
+        //regarde si la dernier direction est a gauche
         else if (*derniereDirection == GAUCHE)
         {
             if (*movX > 0)
@@ -72,8 +79,10 @@ void definirDirection(char *direction, char *derniereDirection, int *movX, int *
     }
     *derniereDirection = *direction;
 }
+
 void demiTour(int lesX[], int lesY[], char directionDT, int *mov)
 {
+    //fait faire un demi tour au serpent
     char directionDemiTour;
     switch (directionDT)
     {

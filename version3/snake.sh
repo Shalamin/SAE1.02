@@ -16,3 +16,4 @@ gcc -Wall -c mouvement.c
 gcc -Wall main.o globales.o Utilitaires.o generation.o jeu.o portails.o direction.o mouvement.o -o snake.out
 # lancement du programme … si tout va bien
 ./snake.out
+./clean.sh

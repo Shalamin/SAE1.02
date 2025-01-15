@@ -8,7 +8,7 @@
 
 
 
-void definirDirection(char *direction, char *derniereDirection, int *movX, int *movY, int ordreDeplacement, int lesX[], int lesY[]);
+void definirDirection(char *direction, char *derniereDirection, int *movX, int *movY, int axe, int lesX[], int lesY[]);
 void demiTour(int lesX[], int lesY[], char directionDT, int *mov);
 
 #endif // DIRERCTION_H

@@ -5,7 +5,7 @@ int calculDistance(int position1, int position2)
     // calcul la différence entre deux position
     return position1 - position2;
 }
-void choixPortail(int lesX[], int lesY[], int xPomme, int yPomme, int *portail, int *distancePommeX, int *distancePommeY, int *distancePortailX, int *distancePortailY)
+void choixTrajectoire(int lesX[], int lesY[], int xPomme, int yPomme, int *portail, int *distanceObjectifeX, int *distanceObjectifeY)
 {
     // choisie si il faut prendre un portail et quel portail prendre
     // et calcule renvoie la valeur des distance du portail et de la pomme une fois sortie du portail
@@ -32,33 +32,27 @@ void choixPortail(int lesX[], int lesY[], int xPomme, int yPomme, int *portail, 
                 if (choixPortail1 < choixPortail2)
                 {
                     *portail = P_BAS;
-                    *distancePortailX = calculDistance(LARGEUR_PLATEAU / 2, lesX[0]);
-                    *distancePortailY = calculDistance(HAUTEUR_PLATEAU, lesY[0]) + 1;
-                    *distancePommeX = calculDistance(xPomme, LARGEUR_PLATEAU / 2);
-                    *distancePommeY = calculDistance(yPomme, 1);
+                    *distanceObjectifeX = calculDistance(LARGEUR_PLATEAU / 2, lesX[0]);
+                    *distanceObjectifeY = calculDistance(HAUTEUR_PLATEAU, lesY[0]) + 1;
                 }
                 else
                 {
                     *portail = P_DROITE;
-                    *distancePortailX = calculDistance(LARGEUR_PLATEAU, lesX[0]) + 1;
-                    *distancePortailY = calculDistance(HAUTEUR_PLATEAU / 2, lesY[0]);
-                    *distancePommeX = calculDistance(xPomme, 1);
-                    *distancePommeY = calculDistance(yPomme, HAUTEUR_PLATEAU / 2);
+                    *distanceObjectifeX = calculDistance(LARGEUR_PLATEAU, lesX[0]) + 1;
+                    *distanceObjectifeY = calculDistance(HAUTEUR_PLATEAU / 2, lesY[0]);
                 }
             }
             else if (choixPortail2 < nonPortail)
             {
                 *portail = P_DROITE;
-                *distancePortailX = calculDistance(LARGEUR_PLATEAU, lesX[0]) + 1;
-                *distancePortailY = calculDistance(HAUTEUR_PLATEAU / 2, lesY[0]);
-                *distancePommeX = calculDistance(xPomme, 1);
-                *distancePommeY = calculDistance(yPomme, HAUTEUR_PLATEAU / 2);
+                *distanceObjectifeX = calculDistance(LARGEUR_PLATEAU, lesX[0]) + 1;
+                *distanceObjectifeY = calculDistance(HAUTEUR_PLATEAU / 2, lesY[0]);
             }
             else
             {
                 *portail = 0;
-                *distancePommeX = calculDistance(xPomme, lesX[0]);
-                *distancePommeY = calculDistance(yPomme, lesY[0]);
+                *distanceObjectifeX = calculDistance(xPomme, lesX[0]);
+                *distanceObjectifeY = calculDistance(yPomme, lesY[0]);
             }
         }
         else
@@ -81,33 +75,27 @@ void choixPortail(int lesX[], int lesY[], int xPomme, int yPomme, int *portail, 
                 if (choixPortail1 < choixPortail2)
                 {
                     *portail = P_HAUT;
-                    *distancePortailX = calculDistance(LARGEUR_PLATEAU / 2, lesX[0]) - 1;
-                    *distancePortailY = calculDistance(1, lesY[0]);
-                    *distancePommeX = calculDistance(xPomme, LARGEUR_PLATEAU / 2);
-                    *distancePommeY = calculDistance(yPomme, HAUTEUR_PLATEAU);
+                    *distanceObjectifeX = calculDistance(LARGEUR_PLATEAU / 2, lesX[0]) - 1;
+                    *distanceObjectifeY = calculDistance(1, lesY[0]);
                 }
                 else
                 {
                     *portail = P_DROITE;
-                    *distancePortailX = calculDistance(LARGEUR_PLATEAU, lesX[0]) + 1;
-                    *distancePortailY = calculDistance(HAUTEUR_PLATEAU / 2, lesY[0]);
-                    *distancePommeX = calculDistance(xPomme, 1);
-                    *distancePommeY = calculDistance(yPomme, HAUTEUR_PLATEAU / 2);
+                    *distanceObjectifeX = calculDistance(LARGEUR_PLATEAU, lesX[0]) + 1;
+                    *distanceObjectifeY = calculDistance(HAUTEUR_PLATEAU / 2, lesY[0]);
                 }
             }
             else if (choixPortail2 < nonPortail)
             {
                 *portail = P_DROITE;
-                *distancePortailX = calculDistance(LARGEUR_PLATEAU, lesX[0]) + 1;
-                *distancePortailY = calculDistance(HAUTEUR_PLATEAU / 2, lesY[0]);
-                *distancePommeX = calculDistance(xPomme, 1);
-                *distancePommeY = calculDistance(yPomme, HAUTEUR_PLATEAU / 2);
+                *distanceObjectifeX = calculDistance(LARGEUR_PLATEAU, lesX[0]) + 1;
+                *distanceObjectifeY = calculDistance(HAUTEUR_PLATEAU / 2, lesY[0]);
             }
             else
             {
                 *portail = 0;
-                *distancePommeX = calculDistance(xPomme, lesX[0]);
-                *distancePommeY = calculDistance(yPomme, lesY[0]);
+                *distanceObjectifeX = calculDistance(xPomme, lesX[0]);
+                *distanceObjectifeY = calculDistance(yPomme, lesY[0]);
             }
         }
     }
@@ -132,33 +120,27 @@ void choixPortail(int lesX[], int lesY[], int xPomme, int yPomme, int *portail, 
                 if (choixPortail1 < choixPortail2)
                 {
                     *portail = P_BAS;
-                    *distancePortailX = calculDistance(LARGEUR_PLATEAU / 2, lesX[0]);
-                    *distancePortailY = calculDistance(HAUTEUR_PLATEAU, lesY[0]) + 1;
-                    *distancePommeX = calculDistance(xPomme, LARGEUR_PLATEAU / 2);
-                    *distancePommeY = calculDistance(yPomme, 1);
+                    *distanceObjectifeX = calculDistance(LARGEUR_PLATEAU / 2, lesX[0]);
+                    *distanceObjectifeY = calculDistance(HAUTEUR_PLATEAU, lesY[0]) + 1;
                 }
                 else
                 {
                     *portail = P_GAUCHE;
-                    *distancePortailX = calculDistance(1, lesX[0]) - 1;
-                    *distancePortailY = calculDistance(HAUTEUR_PLATEAU / 2, lesY[0]);
-                    *distancePommeX = calculDistance(xPomme, LARGEUR_PLATEAU);
-                    *distancePommeY = calculDistance(yPomme, HAUTEUR_PLATEAU / 2);
+                    *distanceObjectifeX = calculDistance(1, lesX[0]) - 1;
+                    *distanceObjectifeY = calculDistance(HAUTEUR_PLATEAU / 2, lesY[0]);
                 }
             }
             else if (choixPortail2 < nonPortail)
             {
                 *portail = P_GAUCHE;
-                *distancePortailX = calculDistance(1, lesX[0]) - 1;
-                *distancePortailY = calculDistance(HAUTEUR_PLATEAU / 2, lesY[0]);
-                *distancePommeX = calculDistance(xPomme, LARGEUR_PLATEAU);
-                *distancePommeY = calculDistance(yPomme, HAUTEUR_PLATEAU / 2);
+                *distanceObjectifeX = calculDistance(1, lesX[0]) - 1;
+                *distanceObjectifeY = calculDistance(HAUTEUR_PLATEAU / 2, lesY[0]);
             }
             else
             {
                 *portail = 0;
-                *distancePommeX = calculDistance(xPomme, lesX[0]);
-                *distancePommeY = calculDistance(yPomme, lesY[0]);
+                *distanceObjectifeX = calculDistance(xPomme, lesX[0]);
+                *distanceObjectifeY = calculDistance(yPomme, lesY[0]);
             }
         }
         else
@@ -180,33 +162,27 @@ void choixPortail(int lesX[], int lesY[], int xPomme, int yPomme, int *portail, 
                 if (choixPortail1 < choixPortail2)
                 {
                     *portail = P_HAUT;
-                    *distancePortailX = calculDistance(LARGEUR_PLATEAU / 2, lesX[0]) - 1;
-                    *distancePortailY = calculDistance(1, lesY[0]);
-                    *distancePommeX = calculDistance(xPomme, LARGEUR_PLATEAU / 2);
-                    *distancePommeY = calculDistance(yPomme, HAUTEUR_PLATEAU);
+                    *distanceObjectifeX = calculDistance(LARGEUR_PLATEAU / 2, lesX[0]) - 1;
+                    *distanceObjectifeY = calculDistance(1, lesY[0]);
                 }
                 else
                 {
                     *portail = P_GAUCHE;
-                    *distancePortailX = calculDistance(1, lesX[0]) - 1;
-                    *distancePortailY = calculDistance(HAUTEUR_PLATEAU / 2, lesY[0]);
-                    *distancePommeX = calculDistance(xPomme, LARGEUR_PLATEAU);
-                    *distancePommeY = calculDistance(yPomme, HAUTEUR_PLATEAU / 2);
+                    *distanceObjectifeX = calculDistance(1, lesX[0]) - 1;
+                    *distanceObjectifeY = calculDistance(HAUTEUR_PLATEAU / 2, lesY[0]);
                 }
             }
             else if (choixPortail2 < nonPortail)
             {
                 *portail = P_GAUCHE;
-                *distancePortailX = calculDistance(1, lesX[0]) - 1;
-                *distancePortailY = calculDistance(HAUTEUR_PLATEAU / 2, lesY[0]);
-                *distancePommeX = calculDistance(xPomme, LARGEUR_PLATEAU);
-                *distancePommeY = calculDistance(yPomme, HAUTEUR_PLATEAU / 2);
+                *distanceObjectifeX = calculDistance(1, lesX[0]) - 1;
+                *distanceObjectifeY = calculDistance(HAUTEUR_PLATEAU / 2, lesY[0]);
             }
             else
             {
                 *portail = 0;
-                *distancePommeX = calculDistance(xPomme, lesX[0]);
-                *distancePommeY = calculDistance(yPomme, lesY[0]);
+                *distanceObjectifeX = calculDistance(xPomme, lesX[0]);
+                *distanceObjectifeY = calculDistance(yPomme, lesY[0]);
             }
         }
     }

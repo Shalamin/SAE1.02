@@ -6,7 +6,6 @@
 #include "jeu.h"
 
 int calculDistance(int position1, int position2);
-void choixPortail(int lesX[], int lesY[], int xPomme, int yPomme, int *portail, int *distancePommeX, int *distancePommeY, int *distancePortailX, int *distancePortailY);
-
+void choixTrajectoire(int lesX[], int lesY[], int xPomme, int yPomme, int *portail, int *distanceObjectifeX, int *distanceObjectifeY);
 
 #endif // PORTAILS_H

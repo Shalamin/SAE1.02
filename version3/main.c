@@ -89,6 +89,7 @@ int main()
     do
     {
         choixPortail(lesX, lesY, xPomme, yPomme, &portail, &distancePommeX, &distancePommeY, &distancePortailX, &distancePortailY);
+        printf("%d\n",distancePommeX);
         if (portail == P_GAUCHE)
         {
             xPortail = 1;
@@ -115,7 +116,6 @@ int main()
             {
                 if (!existePavesPomme(lesX, lesY, xPomme, yPomme, derniereDirection, lePlateau))
                 {
-                    printf("toto");
                     ordreDeplacement = 2;
                 }
                 else
@@ -124,14 +124,15 @@ int main()
                     {
                         escivePavesPomme(lesX, lesY, xPomme, yPomme, &derniereDirection, lePlateau, &axeEscive);
                     }
-                    else if (distancePommeY == 0)
-                    {
-                        escivePavesPomme(lesX, lesY, xPomme, yPomme, &derniereDirection, lePlateau, &axeEscive);
-                    }
-                    else
+                    else if (distancePommeY != 0)
                     {
                         ordreDeplacement = 3;
                     }
+                    else
+                    {
+                        escivePavesPomme(lesX, lesY, xPomme, yPomme, &derniereDirection, lePlateau, &axeEscive);
+                    }
+                    
                     
                 }
             }
@@ -139,21 +140,23 @@ int main()
             {
                 if (!existePavesPomme(lesX, lesY, xPomme, yPomme, derniereDirection, lePlateau))
                 {
-
                     ordreDeplacement = 3;
                 }
                 else
                 {
-                    if (distancePommeX == 0)
+                    if (distancePommeY == 0)
                     {
                         escivePavesPomme(lesX, lesY, xPomme, yPomme, &derniereDirection, lePlateau, &axeEscive);
                     }
-                    else if (distancePommeY == 0)
+                    else if(distancePommeX != 0)
                     {
-                        escivePavesPomme(lesX, lesY, xPomme, yPomme, &derniereDirection, lePlateau, &axeEscive);
+                        ordreDeplacement = 2;
                     }
                     else
-                        ordreDeplacement = 2;
+                    {
+                        escivePavesPomme(lesX, lesY, xPomme, yPomme, &derniereDirection, lePlateau, &axeEscive);
+                    }
+                       
                 }
             }
         }

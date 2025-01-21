@@ -57,6 +57,8 @@ int main()
     int ordreDeplacement = 0;
     // nombre permettant de géré les boucle while du main
     int i = 0;
+    //axe de la dernier escive de pavé 0 axe des X 1 axe des Y -1 si pas d'escive
+    int axeEscive = -1;
 
     // initialisation de la position du serpent : positionnement de la
     // tête en (X_INITIAL, Y_INITIAL), puis des anneaux à sa gauche
@@ -113,20 +115,24 @@ int main()
             {
                 if (!existePavesPomme(lesX, lesY, xPomme, yPomme, derniereDirection, lePlateau))
                 {
-
-                    if (distancePommeX == 0)
-                    {
-                        escivePavesPomme(lesX, lesY, xPomme, yPomme, &derniereDirection, lePlateau);
-                        ordreDeplacement = 3;
-                    }
-                    else
-
-                        ordreDeplacement = 2;
+                    printf("toto");
+                    ordreDeplacement = 2;
                 }
                 else
                 {
-
-                    ordreDeplacement = 3;
+                    if (distancePommeX == 0)
+                    {
+                        escivePavesPomme(lesX, lesY, xPomme, yPomme, &derniereDirection, lePlateau, &axeEscive);
+                    }
+                    else if (distancePommeY == 0)
+                    {
+                        escivePavesPomme(lesX, lesY, xPomme, yPomme, &derniereDirection, lePlateau, &axeEscive);
+                    }
+                    else
+                    {
+                        ordreDeplacement = 3;
+                    }
+                    
                 }
             }
             else
@@ -140,11 +146,11 @@ int main()
                 {
                     if (distancePommeX == 0)
                     {
-                        escivePavesPomme(lesX, lesY, xPomme, yPomme, &derniereDirection, lePlateau);
+                        escivePavesPomme(lesX, lesY, xPomme, yPomme, &derniereDirection, lePlateau, &axeEscive);
                     }
                     else if (distancePommeY == 0)
                     {
-                        escivePavesPomme(lesX, lesY, xPomme, yPomme, &derniereDirection, lePlateau);
+                        escivePavesPomme(lesX, lesY, xPomme, yPomme, &derniereDirection, lePlateau, &axeEscive);
                     }
                     else
                         ordreDeplacement = 2;
@@ -158,7 +164,7 @@ int main()
                 if (existePavesPortail(lesX, lesY, xPortail, yPortail, derniereDirection, lePlateau))
                 {
 
-                    escivePavesPortail(lesX, lesY, xPortail, yPortail, &derniereDirection, lePlateau);
+                    escivePavesPortail(lesX, lesY, xPortail, yPortail, &derniereDirection, lePlateau, &axeEscive);
                     ordreDeplacement = 1;
                 }
                 else
@@ -177,7 +183,7 @@ int main()
                 if (existePavesPortail(lesX, lesY, xPortail, yPortail, derniereDirection, lePlateau))
                 {
 
-                    escivePavesPortail(lesX, lesY, xPortail, yPortail, &derniereDirection, lePlateau);
+                    escivePavesPortail(lesX, lesY, xPortail, yPortail, &derniereDirection, lePlateau, &axeEscive);
                     ordreDeplacement = 1; // Aller dans la direction X
                 }
                 else

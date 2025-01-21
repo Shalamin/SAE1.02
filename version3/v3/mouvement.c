@@ -115,7 +115,7 @@ bool existePavesPomme(int lesX[], int lesY[], int xPomme, int yPomme, char derni
             }
         }
     }
-    if ((derniereDirection == BAS || derniereDirection == HAUT) && existePaves)
+    if ((derniereDirection == BAS || derniereDirection == HAUT))
     {
         // Si on allait vers le bas ou le haut et qu'on a trouvé un pavé en X,
         // on vérifie aussi le chemin en Y
@@ -133,7 +133,7 @@ bool existePavesPomme(int lesX[], int lesY[], int xPomme, int yPomme, char derni
             {
                 existePaves = false;
                 gotoxy(1, HAUTEUR_PLATEAU + 2);
-                printf("j'existe\n");
+                //printf("j'existe\n");
             }
         }
     }
@@ -204,7 +204,7 @@ bool existePavesPortail(int lesX[], int lesY[], int xPortail, int yPortail, char
 
     return existePaves;
 }
-void escivePavesPomme(int lesX[], int lesY[], int xPomme, int yPomme, char *derniereDirection, tPlateau plateau)
+void escivePavesPomme(int lesX[], int lesY[], int xPomme, int yPomme, char *derniereDirection, tPlateau plateau, int *axeEscive)
 {
     int distPommeX = xPomme - lesX[0];
     int distPommeY = yPomme - lesY[0];
@@ -216,38 +216,88 @@ void escivePavesPomme(int lesX[], int lesY[], int xPomme, int yPomme, char *dern
     // Vérifie les mouvements nécessaires pour esquiver à gauche
     if (movX == 0 && movY != 0)
     {
-
-        for (int i = 0; i <= 4; i++)
+        //verifie si le paver a éviter est en haut ou en bas
+        if(distPommeY > 0)
         {
-            if (plateau[lesX[0] - movGauche][lesY[0] - i] == PAVE || plateau[lesX[0] - movGauche][lesY[0] + i] == PAVE)
+            for (int i = 0; i <= movY; i++)
             {
-                movGauche++;
+                if (plateau[lesX[0] - movGauche][lesY[0] + i] == PAVE)
+                {
+                    movGauche++;
+                    i--;
+                }
+            }
+            for (int i = 0; i <= movY; i++)
+            {
+                if (plateau[lesX[0] + movDroite][lesY[0] + i] == PAVE)
+                {
+                    movDroite++;
+                    i--;
+                }
             }
         }
-        for (int i = 0; i <= 4; i++)
+        else
         {
-            if (plateau[lesX[0] + movDroite][lesY[0] - i] == PAVE || plateau[lesX[0] + movDroite][lesY[0] + i] == PAVE)
+            for (int i = 0; i <= movX; i++)
             {
-                movDroite++;
+                if (plateau[lesX[0] - movGauche][lesY[0] - i] == PAVE)
+                {
+                    movGauche++;
+                    i--;
+                }
+            }
+            for (int i = 0; i <= movX; i++)
+            {
+                if (plateau[lesX[0] + movDroite][lesY[0] - i] == PAVE )
+                {
+                    movDroite++;
+                    i--;
+                }
             }
         }
+        
     }
     if (movY == 0 && movX != 0)
     {
-        for (int i = 0; i <= 4; i++)
+        if(distPommeX > 0)
         {
-            if (plateau[lesX[0] - i][lesY[0] - movHaut] == PAVE || plateau[lesX[0] + i][lesY[0] - movHaut] == PAVE)
+            for (int i = 0; i <= LARGEUR_PLATEAU; i++)
             {
-                movHaut++;
+                if (plateau[lesX[0] + i][lesY[0] - movHaut] == PAVE)
+                {
+                    movHaut++;
+                    i--;
+                }
+            }
+            for (int i = 0; i <= LARGEUR_PLATEAU; i++)
+            {
+                if (plateau[lesX[0] + i][lesY[0] + movBas] == PAVE)
+                {
+                    movBas++;
+                    i--;
+                }
             }
         }
-        for (int i = 0; i <= 4; i++)
+        else
         {
-            if (plateau[lesX[0] - i][lesY[0] + movBas] == PAVE || plateau[lesX[0] + i][lesY[0] + movBas] == PAVE)
+            for (int i = 0; i <= LARGEUR_PLATEAU; i++)
             {
-                movBas++;
+                if (plateau[lesX[0] - i][lesY[0] - movHaut] == PAVE)
+                {
+                    movHaut++;
+                    i--;
+                }
+            }
+            for (int i = 0; i <= LARGEUR_PLATEAU; i++)
+            {
+                if (plateau[lesX[0] - i][lesY[0] + movBas] == PAVE)
+                {
+                    movBas++;
+                    i--;
+                }
             }
         }
+        
     }
     if (movX != 0 && movY != 0)
     {
@@ -302,6 +352,7 @@ void escivePavesPomme(int lesX[], int lesY[], int xPomme, int yPomme, char *dern
             progresser(lesX, lesY, GAUCHE);
             *derniereDirection = GAUCHE;
         }
+        *axeEscive = 0;
     }
     else
     {
@@ -310,6 +361,7 @@ void escivePavesPomme(int lesX[], int lesY[], int xPomme, int yPomme, char *dern
             progresser(lesX, lesY, DROITE);
             *derniereDirection = DROITE;
         }
+        *axeEscive = 0;
     }
     if (movBas < movHaut || movBas == 0)
     {
@@ -318,6 +370,7 @@ void escivePavesPomme(int lesX[], int lesY[], int xPomme, int yPomme, char *dern
             progresser(lesX, lesY, BAS);
             *derniereDirection = BAS;
         }
+        *axeEscive = 1;
     }
     else
     {
@@ -326,9 +379,10 @@ void escivePavesPomme(int lesX[], int lesY[], int xPomme, int yPomme, char *dern
             progresser(lesX, lesY, HAUT);
             *derniereDirection = HAUT;
         }
+        *axeEscive = 1;
     }
 }
-void escivePavesPortail(int lesX[], int lesY[], int xPortail, int yPortail, char *derniereDirection, tPlateau plateau)
+void escivePavesPortail(int lesX[], int lesY[], int xPortail, int yPortail, char *derniereDirection, tPlateau plateau, int *axeEscive)
 {
     int distPortailX = lesX[0] - xPortail;
     int distPortailY = lesY[0] - yPortail;
@@ -426,6 +480,7 @@ void escivePavesPortail(int lesX[], int lesY[], int xPortail, int yPortail, char
             progresser(lesX, lesY, GAUCHE);
             *derniereDirection = GAUCHE;
         }
+        *axeEscive = 0;
     }
     else
     {
@@ -434,6 +489,7 @@ void escivePavesPortail(int lesX[], int lesY[], int xPortail, int yPortail, char
             progresser(lesX, lesY, DROITE);
             *derniereDirection = DROITE;
         }
+        *axeEscive = 0;
     }
     if (movBas < movHaut || movHaut == 0)
     {
@@ -442,6 +498,7 @@ void escivePavesPortail(int lesX[], int lesY[], int xPortail, int yPortail, char
             progresser(lesX, lesY, BAS);
             *derniereDirection = BAS;
         }
+        *axeEscive = 1;
     }
     else
     {
@@ -450,5 +507,6 @@ void escivePavesPortail(int lesX[], int lesY[], int xPortail, int yPortail, char
             progresser(lesX, lesY, HAUT);
             *derniereDirection = HAUT;
         }
+        *axeEscive = 1;
     }
 }
